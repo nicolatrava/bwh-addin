@@ -12,11 +12,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 .top{background:var(--pink);padding:18px 20px 14px}
 .top-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .arch{width:28px;height:28px;border:2.5px solid rgba(255,255,255,.7);border-bottom:none;border-radius:50% 50% 0 0}
-.top h1{color:white;font-size:15px;font-weight:600}
 .top p{color:rgba(255,255,255,.7);font-size:11px;margin-top:2px}
 .scroll{padding:0 0 90px}
 .section{padding:16px 16px 0}
-.section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--pink);margin-bottom:10px}
+.stitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--pink);margin-bottom:10px}
 .cards{display:flex;flex-direction:column;gap:6px}
 .card{border:1.5px solid #e8e8e8;border-radius:8px;padding:11px 14px;cursor:pointer;transition:all .15s;background:white;position:relative}
 .card:hover{border-color:var(--pink);background:var(--pink-light)}
@@ -45,7 +44,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 </div>
 <div class="scroll">
   <div class="section" style="margin-top:16px">
-    <div class="section-title">1 · Abteilung wählen</div>
+    <div class="stitle">1 · Abteilung wählen</div>
     <div class="cards">
       <div class="card" onclick="sel(this,'Arbeitstraining','Theodorskirchplatz 7','4058','')">
         <span class="card-check">&#10003;</span>
@@ -76,10 +75,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
   </div>
   <div class="sep"></div>
   <div class="section" style="margin-top:14px">
-    <div class="section-title">2 · Dokument-Infos (optional)</div>
+    <div class="stitle">2 · Dokument-Infos (optional)</div>
     <div class="field">
       <label>Prozessname</label>
-      <input id="prozessname" type="text" placeholder="Prozess: Kitas, Station&#228;re P&#228;dagogik, Finanzen und Controlling ..."/>
+      <input id="prozessname" type="text" placeholder="Prozess: Kitas, Station&#228;re P&#228;dagogik, Finanzen ..."/>
     </div>
     <div class="field">
       <label>Ablageort</label>
@@ -92,6 +91,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
   <div class="status" id="status"></div>
 </div>
 <script>
+var LOGO_B64 = "AQAAAHQAAACcAQAAPAEAACAKAAAaBgAASzIAAJMmAABoPAEArb4AACBFTUYAAAEAABMAADYAAAADAAAADQAAAFgAAAAAAAAAAAQAAAADAABAAQAA8AAAAEEAZABvAGIAZQAgAFMAeQBzAHQAZQBtAHMAAAARAAAADAAAAAgAAAASAAAADAAAAAEAAAAKAAAAEAAAAAAAAAAAAAAADAAAABAAAAAAAAAAAAAAAAkAAAAQAAAAhAgAAN4EAAALAAAAEAAAAIQIAADeBAAAEwAAAAwAAAACAAAAJwAAABgAAAABAAAAAAAAAKdOWAAAAAAAJQAAAAwAAAABAAAAXwAAADQAAAACAAAALAAAAAAAAAAsAAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACUAAAAMAAAAAgAAADsAAAAIAAAAGwAAABAAAAAYCgAAtAUAAFgAAABEAgAASgkAACcFAAAiCgAAHAYAAIoAAAATCqoFCwqiBf8JmwXzCZQF4wmOBc4JiwW9CYgFsQmEBagJgQWgCX4Fmwl7BZgJeAWVCXQFlAlwBZQJbAWUCWUFlglgBZwJXAWhCVcFqAlVBbIJVQW6CVUFwQlWBcYJWQXLCVsFzwleBdMJYQXXCWQF2glnBd4JaQXfCWoF4AlrBeEJawXiCWwF5AlsBeUJbAUNCmwFDQpsBQ0KbAUQCmwFEgprBRQKaQUWCmcFFwpkBRcKYQUWCl0FFApXBRAKUQULCkoFBQpEBf0JPgX0CTgF6gkzBd4JLwXRCSsFwwkpBbMJKQWdCSkFiwksBX0JMwVvCToFZAlDBV0JTgVVCVgFUglkBVIJbwVSCXwFVQmHBVoJkAVgCZkFaAmhBXQJpwV/CawFjQmxBZ0JtQWuCbgFuwm8BcMJvwXMCcIF0gnFBdUJyAXYCcwF2gnRBdoJ1gXaCd0F1gnjBc8J5wXICesFwAntBbYJ7QWuCe0FpwnsBaEJ6gWcCecFlwnkBZMJ4QWPCd0FiwnaBYcJ2AWGCdYFhQnWBYQJ1QWDCdUFggnVBYIJ1QVWCdUFVgnVBVYJ1QVUCdUFUQnWBU8J2AVNCdoFTAndBUwJ4AVMCeUFTgnqBVIJ8AVWCfcFXQn9BWUJAwZtCQoGeAkPBoUJEwaSCRgGogkaBrQJGgbMCRoG3wkXBu8JEQb/CQsGCwoCBhQK9wUcCuwFIArgBSAK0gUgCscFHgq9BRgKtAU9AAAACAAAABsAAAAQAAAAGgkAAC0FAABYAAAAbAEAAD8IAAArBQAAJwkAABwGAABUAAAA6ggtBeoILQXqCC0F5wgtBeQILgXiCDAF4AgyBd8INQXfCDgF3wiyBd8IsgXfCLIF3wjCBdsIzgXTCNcFywjgBcAI5AWyCOQFlQjkBYYI0wWGCLIFhgg4BYYIOAWGCDgFhgg1BYUIMgWDCDAFgQguBX4ILQV7CC0FSwgtBUsILQVLCC0FSAgtBUYILgVECDAFQggyBUEINQVBCDgFQQi1BUEItQVBCLUFQQjKBUQI3QVMCOwFUwj7BV0IBgZqCA4GeAgWBocIGgaYCBoGqggaBrkIFwbFCBEG0QgMBtsIAwbjCPkF4wgKBuMICgbjCAoG4wgNBuQIEAbmCBIG6AgUBusIFQbuCBUGGgkVBhoJFQYaCRUGHQkVBh8JFAYhCRIGIwkQBiUJDQYlCQoGJQk4BSUJOAUlCTgFJQk1BSMJMgUhCTAFHwkuBR0JLQUaCS0FPQAAAAgAAAAbAAAAEAAAAAMIAAAtBQAAWAAAAGwBAAAoBwAAKwUAABAIAAAcBgAAVAAAANQHLQXUBy0F1ActBdAHLQXOBy4FzAcwBckHMgXIBzUFyAc4BcgHsgXIB7IFyAeyBcgHwgXEB84FvAfXBbQH4AWpB+QFmwfkBX4H5AVvB9MFbweyBW8HOAVvBzgFbwc4BW8HNQVuBzIFbAcwBWoHLgVnBy0FZActBTUHLQU1By0FNQctBTIHLQUvBy4FLQcwBSsHMgUqBzUFKgc4BSoHtQUqB7UFKge1BSoHygUtB90FNQfsBTwH+wVGBwYGVAcOBmEHFgZwBxoGgQcaBpMHGgaiBxcGrgcRBroHDAbEBwMGzAf5BcwHCgbMBwoGzAcKBswHDQbNBxAGzwcSBtEHFAbUBxUG1wcVBgMIFQYDCBUGAwgVBgYIFQYICBQGCggSBg0IEAYOCA0GDggKBg4IOAUOCDgFDgg4BQ4INQUNCDIFCggwBQgILgUGCC0FAwgtBT0AAAAIAAAAGwAAABAAAADTBgAANAUAAFgAAAB4AQAAFAYAANYEAAAABwAAFwYAAFcAAADFBi0FtgYpBaQGKQWUBikFhgYrBXoGMQVuBjcFZQY+BV0GSAVdBuMEXQbjBF0G4wRdBuAEWwbdBFkG2wRXBtkEVQbYBFIG2AQiBtgEIgbYBCIG2AQeBtgEHAbZBBoG2wQXBt0EFgbgBBYG4wQWBgoGFgYKBhYGCgYWBg0GFwYQBhoGEgYcBhQGHgYVBiIGFQZSBhUGUgYVBlIGFQZVBhUGVwYUBlkGEgZbBhAGXQYNBl0GCgZdBpAFXQaQBV0GkAVdBoAFYQZ0BWkGawVyBmMFfQZeBYsGXgWZBl4FpAZjBawGawW0BnQFuAaABbgGkAW4BgoGuAYKBrgGCga4Bg0GuQYQBrsGEga9BhQGvwYVBsIGFQbzBhUG8wYVBvMGFQb2BhUG+QYUBvsGEgb9BhAG/gYNBv4GCgb+Bo4F/gaOBf4GjgX+BngF+gZmBfMGVwXrBkgF4AY8BdMGNAU9AAAACAAAABsAAAAQAAAAUAgAAFkEAABYAAAAkAEAAHIHAACkAwAAWQgAAJkEAABdAAAAUQhWBFAIVAROCFIETAhRBEoIUARHCFAEGAhQBBgIUAQYCFAEFQhQBBIIUAQQCFEEDwhSBA0IVAQKCFcECAhZBAYIWwQDCF4EAAhhBPwHZAT3B2YE8gdoBOwHaQTlB2kE3AdpBNQHZwTOB2IExwddBMMHVwS/B08EvAdHBLoHPgS6BzUEugczBLoHMwS6BzMEugcxBLoHMQS6BzEETAgxBEwIMQRMCDEETwgxBFEIMARTCC4EVggsBFcIKQRXCCYEVwgcBFcIHARXCBwEVwgFBFII8QNKCN8DQgjOAzUIwAMkCLUDEwirA/4HpgPlB6YDzwemA7sHqgOrB7MDmge8A40HyAOEB9kDewfqA3UH/QN0BxQEdAceBHQHHgR0Bx4EdAcnBHQHJwR0BycEdQdMBIAHZwSUB3oEqAeOBMMHlwTmB5cE9weXBAYIlQQUCJAEIQiMBCwIhgQ1CIAEPgh5BEQIcgRJCGsETghkBFAIXgRQCFkEPQAAAAgAAAAbAAAAEAAAALoHAAAIBAAAWAAAAHwAAAC4BwAA0QMAABMIAAALBAAAGAAAALoH/QO7B/QDvwfsA8IH5APHB94DzgfZA9QH1QPcB9MD5QfTA+8H0wP2B9UD/QfZAwQI3gMICOQDDAjsAw8I9AMRCP0DEQgIBBEICQQRCAkEEQgJBLoHCQS6BwkEugcJBD0AAAAIAAAAGwAAABAAAABIBwAAdAQAAFgAAABEAgAAfgYAAKQDAABXBwAAmQQAAIoAAABRB2oEVQddBFUHTwRVB0QEUgc6BE0HMQRIBygEPwcfBDMHGAQoBxEEFwcMBAMHCATyBgUE5gYCBN0G/wPVBvwDzwb4A80G9QPKBvEDyQbtA8kG6QPJBuMDywbdA9EG2QPWBtUD3QbTA+cG0wPvBtMD9gbUA/sG1gMAB9gDBAfbAwgH3gMMB+EDDwfkAxMH5wMUB+gDFQfoAxYH6QMXB+kDGAfpAxoH6QNCB+kDQgfpA0IH6QNEB+kDRwfoA0kH5gNLB+QDTAfiA0wH3wNLB9oDSQfUA0UHzgNAB8cDOgfBAzIHuwMpB7UDHwewAxMHrAMGB6gD+AamA+gGpgPSBqYDwAapA7IGsAOkBrcDmQbAA5IGywOKBtYDhwbhA4cG7AOHBvkDiQYEBI8GDQSVBhYEnQYeBKkGJAS0BioEwgYvBNIGMgTjBjYE7wY5BPgGPAQBBz8EBwdCBAoHRgQNB0kEDgdOBA4HUwQOB1sECwdgBAQHZAT9BmgE9QZqBOsGagTjBmoE3AZpBNYGZwTRBmQEzAZiBMgGXgTEBlsEwAZYBLwGVQS7BlQEugZTBLkGUwS4BlIEtwZSBLYGUgSLBlIEiwZSBIsGUgSJBlIEhgZTBIQGVQSCBlcEgAZaBIEGXQSBBmIEgwZnBIcGbgSLBnQEkQZ6BJoGgQSiBocErAaMBLoGkQTHBpUE1waXBOkGlwQBB5cEFAeUBCQHjgQ0B4gEQAd/BEgHdAQ9AAAACAAAABsAAAAQAAAAIQYAAJMEAABYAAAArAAAABQGAACoAwAAWwYAAJUEAAAkAAAATgaTBE4GkwROBpMEUQaTBFQGkgRWBo8EWAaNBFkGiwRZBocEWQa1A1kGtQNZBrUDWQayA1gGsANWBq0DVAarA1EGqgNOBqoDIQaqAyEGqgMhBqoDHgaqAxsGqwMZBq0DFwawAxYGsgMWBrUDFgaHBBYGhwQWBocEFgaLBBcGjQQZBo8EGwaSBB4GkwQhBpMEPQAAAAgAAAAbAAAAEAAAAMwFAAC/AwAAWAAAAKgBAAAFBQAApAMAAOYFAACZBAAAYwAAAMQFtwO5BbEDrAWtA54FqAOOBaYDewWmA2kFpgNaBagDTQWtA0EFsQM3BbcDLwW9AycFxAMhBcsDHQXSAxkF2AMXBd4DFwXjAxcF5gMXBegDGQXqAxsF7AMeBe0DIQXtA0sF7QNLBe0DSwXtA1AF7QNTBesDVgXoA1kF4QNdBdwDYwXYA2kF1ANxBdMDewXTA4gF0wOSBdYDlwXcA50F4gOfBesDnwX3A58F/wOfBf8DnwX/A2UFBwRlBQcEZQUHBEkFDAQyBRQEIQUgBBAFLAQHBT0EBwVSBAcFXwQLBWsEEwV1BBoFgAQkBYgEMAWOBD0FlARLBZcEWwWXBGcFlwRyBZYEewWTBIQFkASMBYwEkgWHBJkFggSeBX0EogV3BKIFhwSiBYcEogWHBKIFiwSjBY0EpQWPBKcFkgSqBZMErQWTBNgFkwTYBZME2AWTBNwFkwTeBZIE4AWPBOMFjQTkBYsE5AWHBOQF/QPkBf0D5AX9A+QF8QPiBeYD3gXbA9oF0QPUBccDzAW/Az0AAAAIAAAAGwAAABAAAACgBQAALwQAAFgAAACIAAAARgUAACUEAACiBQAAawQAABsAAACgBTwEngVGBJkFTwSVBVgEjwVeBIcFYgR/BWcEdwVpBG0FaQRmBWkEYQVoBFsFZQRVBWMEUQVgBE0FXARKBVgESAVTBEgFTQRIBUYETAU/BFMFOgRbBTQEZgUwBHcFLgSgBScEoAUnBKAFJwQ9AAAACAAAABsAAAAQAAAA7QQAAKoDAABYAAAAwAEAAJwDAACoAwAA+QQAAJUEAABpAAAAxgSqA8YEqgPGBKoDwwSqA8AEqwO9BK0DuwSwA7oEsQO6BLMDkQQ9BJEEPQSRBD0EZgS0A2YEtANmBLQDZQSyA2QEsANhBK4DXwSrA1wEqgNYBKoDPgSqAz4EqgM+BKoDOgSqAzcEqwM1BK4DMgSwAzEEsgMwBLQDBQQ9BAUEPQQFBD0E3AOzA9wDswPcA7MD3AOxA9sDsAPYA60D1gOrA9MDqgPQA6oDqAOqA6gDqgOoA6oDpgOqA6MDqwOhA60DnwOvA54DsQOeA7QDngO2A58DtwOfA7kD3wOHBN8DhwTfA4cE4AOLBOIDjQTkA48E5wOSBOoDkwTuA5MEEASTBBAEkwQQBJMEFASTBBgEkgQaBI8EHQSNBB4EiwQfBIcESwQDBEsEAwRLBAMEdwSHBHcEhwR3BIcEeASLBHoEjQR8BI8EfgSSBIIEkwSGBJMEqASTBKgEkwSoBJMErASTBLAEkgSyBI8EtASNBLYEiwS2BIcE9wS5A/cEuQP3BLkD9wS3A/cEtgP3BLQD9wSxA/YErwP0BK0D8gSrA/AEqgPtBKoDPQAAAAgAAAAbAAAAEAAAAEgGAABlAwAAWAAAANAAAACZAQAAOgEAAFYGAAA1BQAALQAAAE8GZQNUBl4DUwZXA0gG+wIiBlUCqAXaAUAFcQGvBDwB+gM8AUUDPAG1AnEBTALaAZsBjAKcAZoDnAGcA5wBJwWcAScFnAEnBZwBLQWhATMFqAEzBdMBMwXTATMF0wEzBdkBMwXfAS0F3wEnBd8BnAPfAZwD3wGcA98BmgPgAaYCfAIJAtcCrQFYA34B+gN+AZ0EfgEeBa0BeQUJAuMFdAIFBgYDEQZaAxEGYAMWBmUDHAZlAz0AAAAIAAAAPAAAAAgAAAA+AAAAGAAAAJ+GAQCfhgEAYXn+/2F5/v8oAAAADAAAAAEAAAAoAAAADAAAAAIAAAAOAAAAFAAAAAAAAAAQAAAAFAAAAA==";
+var HEADER_INNER = `<w:tbl><w:tblPr><w:tblW w:w="9631" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar><w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0"/></w:tblPr><w:tblGrid><w:gridCol w:w="3261"/><w:gridCol w:w="6370"/></w:tblGrid><w:tr w:rsidR="00F43A7B" w:rsidRPr="00F43A7B" w14:paraId="4589C362" w14:textId="77777777" w:rsidTr="006635E2"><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="3261" w:type="dxa"/><w:vMerge w:val="restart"/></w:tcPr><w:p w14:paraId="47E18D4F" w14:textId="77777777" w:rsidR="00A60D7D" w:rsidRPr="009E294B" w:rsidRDefault="00A60D7D" w:rsidP="00A60D7D"><w:pPr><w:rPr><w:b/><w:color w:val="808080"/><w:sz w:val="40"/><w:szCs w:val="40"/></w:rPr></w:pPr></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="6370" w:type="dxa"/></w:tcPr><w:p w14:paraId="32F6EA5D" w14:textId="79A5D177" w:rsidR="00A60D7D" w:rsidRPr="00F43A7B" w:rsidRDefault="00A60D7D" w:rsidP="00A60D7D"><w:pPr><w:jc w:val="right"/><w:rPr><w:b/><w:color w:val="A74E57"/></w:rPr></w:pPr><w:r w:rsidRPr="00F43A7B"><w:rPr><w:b/><w:color w:val="A74E57"/></w:rPr><w:t>Prozessname</w:t></w:r></w:p></w:tc></w:tr><w:tr w:rsidR="00F43A7B" w:rsidRPr="00F43A7B" w14:paraId="4308BF6C" w14:textId="77777777" w:rsidTr="006635E2"><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="3261" w:type="dxa"/><w:vMerge/></w:tcPr><w:p w14:paraId="51195906" w14:textId="77777777" w:rsidR="00A60D7D" w:rsidRPr="00F43A7B" w:rsidRDefault="00A60D7D" w:rsidP="00A60D7D"><w:pPr><w:tabs><w:tab w:val="left" w:pos="426"/><w:tab w:val="right" w:pos="9072"/></w:tabs><w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="40"/></w:rPr></w:pPr></w:p></w:tc><w:tc><w:tcPr><w:tcW w:w="6370" w:type="dxa"/></w:tcPr><w:p w14:paraId="54790D86" w14:textId="2AD6FF13" w:rsidR="00A60D7D" w:rsidRPr="00F43A7B" w:rsidRDefault="00A60D7D" w:rsidP="00A60D7D"><w:pPr><w:jc w:val="right"/><w:rPr><w:color w:val="A74E57"/></w:rPr></w:pPr><w:r w:rsidRPr="00F43A7B"><w:rPr><w:color w:val="A74E57"/></w:rPr><w:t>Ablageort</w:t></w:r></w:p></w:tc></w:tr></w:tbl><w:p w14:paraId="41A461BC" w14:textId="77777777" w:rsidR="00A60D7D" w:rsidRPr="00F43A7B" w:rsidRDefault="00A60D7D" w:rsidP="00A60D7D"><w:pPr><w:rPr><w:color w:val="A74E57"/><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr><w:r w:rsidRPr="00F43A7B"><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="40"/><w:szCs w:val="40"/></w:rPr><w:drawing><wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="5A46386B" wp14:editId="52EF59E1"><wp:simplePos x="0" y="0"/><wp:positionH relativeFrom="column"><wp:posOffset>13249</wp:posOffset></wp:positionH><wp:positionV relativeFrom="paragraph"><wp:posOffset>-448508</wp:posOffset></wp:positionV><wp:extent cx="753035" cy="430362"/><wp:effectExtent l="0" t="0" r="0" b="8255"/><wp:wrapNone/><wp:docPr id="1988595846" name="Grafik 2"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="Picture 2"/><pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr></pic:nvPicPr><pic:blipFill><a:blip r:embed="logoImg"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/></a:ext></a:extLst></a:blip><a:srcRect/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr bwMode="auto"><a:xfrm><a:off x="0" y="0"/><a:ext cx="753035" cy="430362"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic><wp14:sizeRelH relativeFrom="page"><wp14:pctWidth>0</wp14:pctWidth></wp14:sizeRelH><wp14:sizeRelV relativeFrom="page"><wp14:pctHeight>0</wp14:pctHeight></wp14:sizeRelV></wp:anchor></w:drawing></w:r></w:p>`;
+
 var dept = null;
 function sel(el,name,street,plz,extra){
   document.querySelectorAll('.card').forEach(function(c){c.classList.remove('active');});
@@ -108,7 +110,7 @@ function buildAddr(d){
   parts.push('www.waisehuus.ch');
   return parts.join(dot);
 }
-function getOoxml(addr){
+function footerOoxml(addr){
   var rpr='<w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>';
   function fld(instr,val){
     return '<w:r>'+rpr+'<w:fldChar w:fldCharType="begin"/></w:r>'+
@@ -122,24 +124,47 @@ function getOoxml(addr){
     '<w:r>'+rpr+'<w:t xml:space="preserve"> \u2022 </w:t></w:r>'+
     fld('NUMPAGES \\* Arabic','1')+
     '<w:r>'+rpr+'<w:tab/></w:r>'+
-    fld('TIME \\@ "dd.MM.yyyy"','27.04.2026')+
+    fld('TIME \\@ \"dd.MM.yyyy\"','27.04.2026')+
     '<w:r>'+rpr+'<w:t xml:space="preserve"> </w:t></w:r>'+
     fld('FILENAME \\* MERGEFORMAT','BWH_Dokument')+
     '</w:p>';
-  var addrPara=addr?'<w:p><w:pPr><w:pStyle w:val="Fuzeile"/></w:pPr><w:r>'+rpr+'<w:t>'+
-    addr.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</w:t></w:r></w:p>':'';
-  var body=addrPara+meta+'<w:sectPr/>';
-  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
-    '<?mso-application progid="Word.Document"?>'+
+  var ap=addr?'<w:p><w:pPr><w:pStyle w:val="Fuzeile"/></w:pPr><w:r>'+rpr+'<w:t>'+addr.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</w:t></w:r></w:p>':'';
+  var body=ap+meta+'<w:sectPr/>';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?mso-application progid="Word.Document"?>'+
     '<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">'+
     '<pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">'+
     '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document.xml"/>'+
     '</Relationships></pkg:xmlData></pkg:part>'+
     '<pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">'+
-    '<pkg:xmlData>'+
-    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">'+
-    '<w:body>'+body+'</w:body></w:document>'+
+    '<pkg:xmlData><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'+
+    '<w:body>'+body+'</w:body></w:document></pkg:xmlData></pkg:part></pkg:package>';
+}
+function headerOoxml(pname, aort){
+  var inner = HEADER_INNER;
+  if(pname) inner = inner.replace('>Prozessname<','>' + pname + '<');
+  if(aort) inner = inner.replace('>Ablageort<','>' + aort + '<');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?mso-application progid="Word.Document"?>'+
+    '<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">'+
+    '<pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">'+
+    '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document.xml"/>'+
+    '</Relationships></pkg:xmlData></pkg:part>'+
+    '<pkg:part pkg:name="/word/_rels/document.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml">'+
+    '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="logoImg" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.emf"/>'+
+    '</Relationships></pkg:xmlData></pkg:part>'+
+    '<pkg:part pkg:name="/word/media/logo.emf" pkg:contentType="image/x-emf" pkg:compression="store">'+
+    '<pkg:binaryData>'+LOGO_B64+'</pkg:binaryData></pkg:part>'+
+    '<pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">'+
+    '<pkg:xmlData><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '+
+    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '+
+    'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '+
+    'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '+
+    'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '+
+    'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" '+
+    'xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing">'+
+    '<w:body>'+inner+'<w:sectPr/></w:body></w:document>'+
     '</pkg:xmlData></pkg:part></pkg:package>';
 }
 function apply(){
@@ -150,43 +175,29 @@ function apply(){
   btn.textContent='Wird angewendet\u2026';
   st.className='status';
   var addr=buildAddr(dept);
-  var prozessname=document.getElementById('prozessname').value.trim();
-  var ablageort=document.getElementById('ablageort').value.trim();
-  // Use timeout to prevent UI freeze
+  var pname=document.getElementById('prozessname').value.trim();
+  var aort=document.getElementById('ablageort').value.trim();
   setTimeout(function(){
     Word.run(function(context){
       var sections=context.document.sections;
       sections.load('items');
       return context.sync().then(function(){
         var sec=sections.items[0];
+        // Set footers
         var pf=sec.getFooter('primary');
         pf.clear();
-        pf.insertOoxml(getOoxml(''),'Replace');
+        pf.insertOoxml(footerOoxml(''),'Replace');
         var ff=sec.getFooter('firstPage');
         ff.clear();
-        ff.insertOoxml(getOoxml(addr),'Replace');
-        // Header fields
-        var headers=[sec.getHeader('primary'),sec.getHeader('firstPage')];
-        return context.sync().then(function(){
-          var promises=[];
-          headers.forEach(function(hdr){
-            if(prozessname){
-              var r=hdr.search('Prozessname',{matchCase:false});
-              r.load('items');
-              promises.push(context.sync().then(function(){
-                if(r.items.length>0)r.items[0].insertText(prozessname,'Replace');
-              }));
-            }
-            if(ablageort){
-              var r2=hdr.search('Ablageort',{matchCase:false});
-              r2.load('items');
-              promises.push(context.sync().then(function(){
-                if(r2.items.length>0)r2.items[0].insertText(ablageort,'Replace');
-              }));
-            }
-          });
-          return context.sync();
-        });
+        ff.insertOoxml(footerOoxml(addr),'Replace');
+        // Set headers
+        var ph=sec.getHeader('primary');
+        ph.clear();
+        ph.insertOoxml(headerOoxml(pname,aort),'Replace');
+        var fh=sec.getHeader('firstPage');
+        fh.clear();
+        fh.insertOoxml(headerOoxml(pname,aort),'Replace');
+        return context.sync();
       });
     }).then(function(){
       st.className='status ok';
@@ -195,7 +206,7 @@ function apply(){
       btn.textContent='Auf Dokument anwenden';
     }).catch(function(e){
       st.className='status err';
-      st.textContent='Fehler: '+(e.message||e);
+      st.textContent='Fehler: '+(e.message||String(e));
       btn.disabled=false;
       btn.textContent='Auf Dokument anwenden';
     });
