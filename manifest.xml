@@ -5,7 +5,7 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
   <Id>3a7f2b1c-9d4e-4f8a-b6c2-1e5d8a3f7b9e</Id>
-  <Version>1.0.4</Version>
+  <Version>1.0.3</Version>
   <ProviderName>BWH Basel</ProviderName>
   <DefaultLocale>de-DE</DefaultLocale>
   <DisplayName DefaultValue="BWH Abteilungsauswahl"/>
