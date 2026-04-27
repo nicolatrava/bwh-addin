@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BWH Vorlagen</title>
+<script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--pink:#A74F58;--pink-light:#fdf5f6;--pink-dark:#8e3d46;--gray:#f5f5f5;--text:#2d2d2d;--muted:#888}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:white;color:var(--text);font-size:13px;min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+.top{background:var(--pink);padding:18px 20px 14px}
+.top-logo{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.logo-mark{width:32px;height:32px;border:2.5px solid rgba(255,255,255,.7);border-bottom:none;border-radius:50% 50% 0 0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.logo-mark span{color:white;font-size:10px;font-weight:700;letter-spacing:-.5px;line-height:1}
+.top h1{color:white;font-size:15px;font-weight:600}
+.top p{color:rgba(255,255,255,.7);font-size:11px;margin-top:2px}
+
+/* SCROLL AREA */
+.scroll{flex:1;overflow-y:auto;padding:0 0 80px}
+
+/* SECTIONS */
+.section{padding:16px 16px 0}
+.section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--pink);margin-bottom:10px}
+
+/* DEPARTMENT CARDS */
+.cards{display:flex;flex-direction:column;gap:6px}
+.card{position:relative;border:1.5px solid #e8e8e8;border-radius:8px;padding:11px 14px;cursor:pointer;transition:all .15s;background:white;user-select:none}
+.card:hover{border-color:var(--pink);background:var(--pink-light)}
+.card.active{border-color:var(--pink);background:var(--pink-light);box-shadow:0 0 0 3px rgba(167,79,88,.12)}
+.card-name{font-weight:600;font-size:13px;color:var(--text);padding-right:20px}
+.card-addr{font-size:11px;color:var(--muted);margin-top:2px}
+.card-check{position:absolute;right:12px;top:11px;color:var(--pink);font-size:15px;opacity:0;transition:opacity .15s}
+.card.active .card-check{opacity:1}
+
+/* INPUTS */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px}
+.field input{width:100%;border:1.5px solid #e8e8e8;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;transition:border .15s;color:var(--text)}
+.field input:focus{border-color:var(--pink)}
+.field input::placeholder{color:#bbb}
+
+/* DIVIDER */
+.sep{height:1px;background:#eee;margin:14px 0 0}
+
+/* STICKY FOOTER */
+.sticky{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #eee;padding:12px 16px}
+.btn-apply{width:100%;padding:11px;background:var(--pink);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;letter-spacing:.3px}
+.btn-apply:hover:not(:disabled){background:var(--pink-dark)}
+.btn-apply:disabled{background:#d0d0d0;cursor:not-allowed}
+.btn-apply.loading{background:var(--pink-dark)}
+
+/* STATUS */
+.status{margin-top:8px;padding:8px 12px;border-radius:6px;font-size:12px;text-align:center;display:none}
+.status.ok{background:#e8f5e9;color:#2e7d32;display:block}
+.status.err{background:#ffebee;color:#c62828;display:block}
+
+/* HELP */
+.help{padding:14px 16px;font-size:11px;color:#aaa;line-height:1.6;border-top:1px solid #f0f0f0;margin-top:14px}
+.help b{color:#999}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-logo">
+    <div class="logo-mark"><span>w</span></div>
+    <div class="top h1" style="color:white;font-size:15px;font-weight:600">waisehuus</div>
+  </div>
+  <p style="color:rgba(255,255,255,.75);font-size:11px;margin-top:4px">Dokument-Assistent</p>
+</div>
+
+<div class="scroll">
+
+  <div class="section" style="margin-top:16px">
+    <div class="section-title">1 · Abteilung wählen</div>
+    <div class="cards">
+
+      <div class="card" onclick="selectDept(this,'Arbeitstraining','Theodorskirchplatz 7','4058','')">
+        <div class="card-check">✓</div>
+        <div class="card-name">Arbeitstraining</div>
+        <div class="card-addr">Theodorskirchplatz 7 · 4058 Basel</div>
+      </div>
+
+      <div class="card" onclick="selectDept(this,'Tagesstrukturen','Theodorskirchplatz 7','4058','')">
+        <div class="card-check">✓</div>
+        <div class="card-name">Tagesstrukturen</div>
+        <div class="card-addr">Theodorskirchplatz 7 · 4058 Basel</div>
+      </div>
+
+      <div class="card" onclick="selectDept(this,'Stationäre Pädagogik','Theodorskirchplatz 7','4058','')">
+        <div class="card-check">✓</div>
+        <div class="card-name">Stationäre Pädagogik</div>
+        <div class="card-addr">Theodorskirchplatz 7 · 4058 Basel</div>
+      </div>
+
+      <div class="card" onclick="selectDept(this,'Elternberatung BS','Freie Strasse 35','4001','')">
+        <div class="card-check">✓</div>
+        <div class="card-name">Elternberatung BS</div>
+        <div class="card-addr">Freie Strasse 35 · 4001 Basel</div>
+      </div>
+
+      <div class="card" onclick="selectDept(this,'Tagesfamilien BS','Freie Strasse 35','4001','Postfach')">
+        <div class="card-check">✓</div>
+        <div class="card-name">Tagesfamilien BS</div>
+        <div class="card-addr">Freie Strasse 35 · Postfach · 4001 Basel</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="section" style="margin-top:14px">
+    <div class="section-title">2 · Dokument-Infos (optional)</div>
+    <div class="field">
+      <label>Prozessname</label>
+      <input id="prozessname" type="text" placeholder="z.B. Aufnahme Klient" maxlength="80"/>
+    </div>
+    <div class="field">
+      <label>Ablageort</label>
+      <input id="ablageort" type="text" placeholder="z.B. Q:\Dokumente\Abteilung" maxlength="120"/>
+    </div>
+  </div>
+
+  <div class="help">
+    <b>Was passiert beim Klick:</b><br>
+    · Fusszeile Seite 1 → Adressblock der Abteilung<br>
+    · Fusszeile Seite 2+ → nur Seitenzahl / Datum<br>
+    · Header → Prozessname &amp; Ablageort werden gesetzt
+  </div>
+
+</div>
+
+<div class="sticky">
+  <button class="btn-apply" id="applyBtn" disabled onclick="apply()">
+    Auf Dokument anwenden
+  </button>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+var dept = null;
+
+function selectDept(el, name, street, plz, extra) {
+  document.querySelectorAll('.card').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  dept = { name:name, street:street, plz:plz, extra:extra };
+  document.getElementById('applyBtn').disabled = false;
+  document.getElementById('status').style.display = 'none';
+  document.getElementById('status').className = 'status';
+}
+
+/* ── Build address string ── */
+function buildAddr(d) {
+  var b = '\u2022';
+  var parts = ['B\u00FCrgerliches Waisenhaus Basel', d.name, d.street];
+  if (d.extra) parts.push(d.extra);
+  parts.push(d.plz + ' Basel');
+  parts.push('www.waisehuus.ch');
+  return parts.join('  ' + b + '  ');
+}
+
+/* ── Build footer OOXML ── */
+function footerOoxml(addrText) {
+  var ns = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+  var rpr = '<w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>';
+
+  var pageFields =
+    '<w:r>'+rpr+'<w:fldChar w:fldCharType="begin"/></w:r>'+
+    '<w:r>'+rpr+'<w:instrText xml:space="preserve"> PAGE \\* Arabic </w:instrText></w:r>'+
+    '<w:r>'+rpr+'<w:fldChar w:fldCharType="separate"/></w:r>'+
+    '<w:r>'+rpr+'<w:t>1</w:t></w:r>'+
+    '<w:r>'+rpr+'<w:fldChar w:fldCharType="end"/></w:r>'+
+    '<w:r>'+rpr+'<w:t xml:space="preserve"> \u2022 </w:t></w:r>'+
+    '<w:fldSimple w:instr=" NUMPAGES "><w:r>'+rpr+'<w:t>1</w:t></w:r></w:fldSimple>'+
+    '<w:r>'+rpr+'<w:tab/></w:r>'+
+    '<w:fldSimple w:instr=" SAVEDATE \\@ &quot;dd.MM.yyyy&quot; "><w:r><w:rPr><w:noProof/><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr><w:t>27.04.2026</w:t></w:r></w:fldSimple>'+
+    '<w:r>'+rpr+'<w:t xml:space="preserve"> </w:t></w:r>'+
+    '<w:fldSimple w:instr=" FILENAME \\* MERGEFORMAT "><w:r><w:rPr><w:noProof/><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr><w:t>Dokument</w:t></w:r></w:fldSimple>';
+
+  var metaPara =
+    '<w:p><w:pPr>'+
+    '<w:tabs><w:tab w:val="right" w:pos="9072"/></w:tabs>'+
+    '<w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr>'+
+    '</w:pPr>'+pageFields+'</w:p>';
+
+  var addrPara = addrText ?
+    '<w:p><w:pPr><w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
+    '<w:r>'+rpr+'<w:t>'+addrText.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</w:t></w:r></w:p>'
+    : '';
+
+  var body = addrPara + metaPara + '<w:sectPr/>';
+
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<?mso-application progid="Word.Document"?>'+
+    '<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">'+
+    '<pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">'+
+    '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document.xml"/>'+
+    '</Relationships></pkg:xmlData></pkg:part>'+
+    '<pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">'+
+    '<pkg:xmlData>'+
+    '<w:document '+ns+'>'+
+    '<w:body>'+body+'</w:body></w:document>'+
+    '</pkg:xmlData></pkg:part></pkg:package>';
+}
+
+/* ── Main apply function ── */
+async function apply() {
+  if (!dept) return;
+  var btn = document.getElementById('applyBtn');
+  var statusEl = document.getElementById('status');
+  var prozessname = document.getElementById('prozessname').value.trim();
+  var ablageort = document.getElementById('ablageort').value.trim();
+
+  btn.disabled = true;
+  btn.textContent = 'Wird angewendet\u2026';
+  btn.classList.add('loading');
+  statusEl.className = 'status';
+
+  var addr = buildAddr(dept);
+  var firstOoxml = footerOoxml(addr);
+  var primaryOoxml = footerOoxml('');
+
+  try {
+    await Word.run(async function(context) {
+      var sections = context.document.sections;
+      sections.load('items');
+      await context.sync();
+
+      var sec = sections.items[0];
+
+      /* --- FOOTERS --- */
+      var footerPrimary = sec.getFooter('primary');
+      footerPrimary.clear();
+      footerPrimary.insertOoxml(primaryOoxml, 'Replace');
+
+      var footerFirst = sec.getFooter('firstPage');
+      footerFirst.clear();
+      footerFirst.insertOoxml(firstOoxml, 'Replace');
+
+      /* --- HEADER: replace Prozessname / Ablageort --- */
+      var headers = [sec.getHeader('primary'), sec.getHeader('firstPage')];
+      for (var i = 0; i < headers.length; i++) {
+        var hdr = headers[i];
+
+        if (prozessname) {
+          var pFound = hdr.search('Prozessname', {matchCase:false, matchWholeWord:false});
+          pFound.load('items');
+          await context.sync();
+          if (pFound.items.length > 0) {
+            pFound.items[0].insertText(prozessname, 'Replace');
+          }
+        }
+
+        if (ablageort) {
+          var aFound = hdr.search('Ablageort', {matchCase:false, matchWholeWord:false});
+          aFound.load('items');
+          await context.sync();
+          if (aFound.items.length > 0) {
+            aFound.items[0].insertText(ablageort, 'Replace');
+          }
+        }
+      }
+
+      await context.sync();
+    });
+
+    statusEl.className = 'status ok';
+    statusEl.textContent = '\u2713 Angewendet \u2014 ' + dept.name;
+  } catch(e) {
+    statusEl.className = 'status err';
+    statusEl.textContent = 'Fehler: ' + (e.message || e);
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Auf Dokument anwenden';
+  btn.classList.remove('loading');
+}
+
+Office.onReady(function(info) {
+  if (info.host !== Office.HostType.Word) {
+    document.body.innerHTML = '<div style="padding:20px;color:#c62828">Nur in Microsoft Word verfügbar.</div>';
+  }
+});
+</script>
+</body>
+</html>
