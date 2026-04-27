@@ -16,12 +16,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 .scroll{padding:0 0 90px}
 .section{padding:14px 16px 0}
 .stitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--pink);margin-bottom:10px}
-
-/* Toggle Extern/Intern */
-.toggle-row{display:flex;gap:0;margin-bottom:4px;border:1.5px solid var(--pink);border-radius:8px;overflow:hidden}
-.toggle-btn{flex:1;padding:8px;border:none;background:white;color:var(--pink);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.toggle-row{display:flex;gap:0;border:1.5px solid var(--pink);border-radius:8px;overflow:hidden;margin-bottom:6px}
+.toggle-btn{flex:1;padding:8px;border:none;background:white;color:var(--pink);font-size:12px;font-weight:600;cursor:pointer}
 .toggle-btn.active{background:var(--pink);color:white}
-
+.hint{font-size:11px;color:#aaa;line-height:1.5;margin-bottom:4px}
 .cards{display:flex;flex-direction:column;gap:6px}
 .card{border:1.5px solid #e8e8e8;border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .15s;background:white;position:relative}
 .card:hover,.card.active{border-color:var(--pink);background:var(--pink-light)}
@@ -30,33 +28,25 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 .card-addr{font-size:11px;color:#888;margin-top:2px}
 .ck{position:absolute;right:12px;top:10px;color:var(--pink);font-size:14px;opacity:0}
 .card.active .ck{opacity:1}
-
 .sep{height:1px;background:#eee;margin:14px 0 0}
 .field{margin-bottom:10px}
 .field label{display:block;font-size:11px;font-weight:600;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px}
 .field input{width:100%;border:1.5px solid #e8e8e8;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none}
 .field input:focus{border-color:var(--pink)}
-.fields-intern{transition:opacity .2s}
 .fields-intern.hidden{opacity:.3;pointer-events:none}
-
 .sticky{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #eee;padding:12px 16px}
 .btn{width:100%;padding:11px;background:var(--pink);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
 .btn:disabled{background:#d0d0d0;cursor:not-allowed}
 .status{margin-top:8px;padding:8px 12px;border-radius:6px;font-size:12px;text-align:center;display:none}
 .status.ok{background:#e8f5e9;color:#2e7d32;display:block}
 .status.err{background:#ffebee;color:#c62828;display:block}
-.hint{font-size:11px;color:#aaa;margin-top:6px;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="top">
-  <div class="top-logo">
-    <div class="arch"></div>
-    <span style="color:white;font-size:15px;font-weight:600">waisehuus</span>
-  </div>
+  <div class="top-logo"><div class="arch"></div><span style="color:white;font-size:15px;font-weight:600">waisehuus</span></div>
   <p>Dokument-Assistent</p>
 </div>
-
 <div class="scroll">
   <div class="section" style="margin-top:14px">
     <div class="stitle">Dokumenttyp</div>
@@ -64,44 +54,35 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
       <button class="toggle-btn active" id="btn-intern" onclick="setTyp('intern')">Intern</button>
       <button class="toggle-btn" id="btn-extern" onclick="setTyp('extern')">Extern</button>
     </div>
-    <div class="hint" id="typ-hint">Intern: Prozessname &amp; Ablageort im Header sichtbar</div>
+    <div class="hint" id="typ-hint">Intern: Prozessname &amp; Ablageort im Header</div>
   </div>
-
   <div class="sep"></div>
-
   <div class="section" style="margin-top:14px">
     <div class="stitle">Abteilung w&auml;hlen</div>
     <div class="cards">
       <div class="card" onclick="sel(this,'Arbeitstraining','Theodorskirchplatz 7','4058','')">
-        <span class="ck">&#10003;</span>
-        <div class="card-name">Arbeitstraining</div>
+        <span class="ck">&#10003;</span><div class="card-name">Arbeitstraining</div>
         <div class="card-addr">Theodorskirchplatz 7 &middot; 4058 Basel</div>
       </div>
       <div class="card" onclick="sel(this,'Tagesstrukturen','Theodorskirchplatz 7','4058','')">
-        <span class="ck">&#10003;</span>
-        <div class="card-name">Tagesstrukturen</div>
+        <span class="ck">&#10003;</span><div class="card-name">Tagesstrukturen</div>
         <div class="card-addr">Theodorskirchplatz 7 &middot; 4058 Basel</div>
       </div>
       <div class="card" onclick="sel(this,'Stationäre Pädagogik','Theodorskirchplatz 7','4058','')">
-        <span class="ck">&#10003;</span>
-        <div class="card-name">Station&auml;re P&auml;dagogik</div>
+        <span class="ck">&#10003;</span><div class="card-name">Station&auml;re P&auml;dagogik</div>
         <div class="card-addr">Theodorskirchplatz 7 &middot; 4058 Basel</div>
       </div>
       <div class="card" onclick="sel(this,'Elternberatung BS','Freie Strasse 35','4001','')">
-        <span class="ck">&#10003;</span>
-        <div class="card-name">Elternberatung BS</div>
+        <span class="ck">&#10003;</span><div class="card-name">Elternberatung BS</div>
         <div class="card-addr">Freie Strasse 35 &middot; 4001 Basel</div>
       </div>
       <div class="card" onclick="sel(this,'Tagesfamilien BS','Freie Strasse 35','4001','Postfach')">
-        <span class="ck">&#10003;</span>
-        <div class="card-name">Tagesfamilien BS</div>
+        <span class="ck">&#10003;</span><div class="card-name">Tagesfamilien BS</div>
         <div class="card-addr">Freie Strasse 35 &middot; Postfach &middot; 4001 Basel</div>
       </div>
     </div>
   </div>
-
   <div class="sep"></div>
-
   <div class="section" style="margin-top:14px">
     <div class="stitle">Dokument-Infos (optional)</div>
     <div class="fields-intern" id="fields-intern">
@@ -116,25 +97,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
     </div>
   </div>
 </div>
-
 <div class="sticky">
   <button class="btn" id="applyBtn" disabled onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
 </div>
-
 <script>
-var LOGO="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";
-var dept=null;
-var typ='intern';
+var LOGO="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";
+var dept=null, typ='intern';
 
 function setTyp(t){
   typ=t;
-  document.getElementById('btn-intern').classList.toggle('active', t==='intern');
-  document.getElementById('btn-extern').classList.toggle('active', t==='extern');
-  document.getElementById('fields-intern').classList.toggle('hidden', t==='extern');
-  document.getElementById('typ-hint').textContent = t==='intern'
-    ? 'Intern: Prozessname & Ablageort im Header sichtbar'
-    : 'Extern: Header ohne Prozessname & Ablageort';
+  document.getElementById('btn-intern').classList.toggle('active',t==='intern');
+  document.getElementById('btn-extern').classList.toggle('active',t==='extern');
+  document.getElementById('fields-intern').classList.toggle('hidden',t==='extern');
+  document.getElementById('typ-hint').textContent=t==='intern'
+    ?'Intern: Prozessname & Ablageort im Header'
+    :'Extern: Header ohne Prozessname & Ablageort';
 }
 
 function sel(el,name,street,plz,extra){
@@ -145,9 +123,7 @@ function sel(el,name,street,plz,extra){
   document.getElementById('status').style.display='none';
 }
 
-function esc(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function buildAddr(d){
   var dot='  •  ';
@@ -164,8 +140,7 @@ function mkPkg(docContent, extraParts){
     '<pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">'+
     '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document.xml"/>'+
-    '</Relationships></pkg:xmlData></pkg:part>'+
-    (extraParts||'')+
+    '</Relationships></pkg:xmlData></pkg:part>'+(extraParts||'')+
     '<pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">'+
     '<pkg:xmlData><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '+
     'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '+
@@ -173,17 +148,11 @@ function mkPkg(docContent, extraParts){
     'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '+
     'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '+
     'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">'+
-    '<w:body>'+docContent+'<w:sectPr/></w:body></w:document>'+
-    '</pkg:xmlData></pkg:part></pkg:package>';
+    '<w:body>'+docContent+'<w:sectPr/></w:body></w:document></pkg:xmlData></pkg:part></pkg:package>';
 }
 
-function rpr(color, sz){
-  color = color||'A74F58'; sz = sz||16;
-  return '<w:rPr><w:color w:val="'+color+'"/><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/></w:rPr>';
-}
-
-function fldRun(instr, cached, color, sz){
-  var r=rpr(color,sz);
+function fld(instr,cached){
+  var r='<w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>';
   return '<w:r>'+r+'<w:fldChar w:fldCharType="begin"/></w:r>'+
          '<w:r>'+r+'<w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
          '<w:r>'+r+'<w:fldChar w:fldCharType="separate"/></w:r>'+
@@ -191,69 +160,82 @@ function fldRun(instr, cached, color, sz){
          '<w:r>'+r+'<w:fldChar w:fldCharType="end"/></w:r>';
 }
 
-function txtRun(t, color, sz, bold){
-  var r='<w:rPr>'+(bold?'<w:b/>':'')+'<w:color w:val="'+(color||'A74F58')+'"/><w:sz w:val="'+(sz||16)+'"/><w:szCs w:val="'+(sz||16)+'"/></w:rPr>';
-  return '<w:r>'+r+'<w:t xml:space="preserve">'+esc(t)+'</w:t></w:r>';
+function tr(t,color,sz,bold){
+  var rpr='<w:rPr>'+(bold?'<w:b/>':'')+'<w:color w:val="'+(color||'A74F58')+'"/><w:sz w:val="'+(sz||16)+'"/><w:szCs w:val="'+(sz||16)+'"/></w:rPr>';
+  return '<w:r>'+rpr+'<w:t xml:space="preserve">'+esc(t)+'</w:t></w:r>';
 }
 
+// Footer: use 2-col table for reliable left/right layout
 function footerOoxml(addr){
-  // Line 1: address (full width, left)
-  var addrLine = addr ?
-    '<w:p><w:pPr><w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
-    txtRun(addr,'A74F58',16)+'</w:p>' : '';
-
-  // Line 2: "1 • 1" LEFT | tab | "dd.MM.yyyy Dateiname" RIGHT
-  var metaLine =
-    '<w:p><w:pPr>'+
-    '<w:tabs><w:tab w:val="right" w:pos="9072"/></w:tabs>'+
-    '<w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
-    fldRun('PAGE \* Arabic','1','A74F58',16)+
-    txtRun(' • ','A74F58',16)+
-    fldRun('NUMPAGES \* Arabic','1','A74F58',16)+
-    '<w:r><w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr><w:tab/></w:r>'+
-    fldRun('TIME \@ "dd.MM.yyyy"','27.04.2026','A74F58',16)+
-    txtRun(' ','A74F58',16)+
-    fldRun('FILENAME \* MERGEFORMAT','BWH_Dokument','A74F58',16)+
-    '</w:p>';
-
-  return mkPkg(addrLine + metaLine, '');
+  var rpr='<w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>';
+  // Address line (full width)
+  var addrPara=addr?
+    '<w:p><w:pPr><w:rPr><w:color w:val="A74F58"/><w:sz w:val="16"/></w:rPr></w:pPr>'+tr(addr)+'</w:p>':'';
+  // Meta line: table with page# left, date+filename right
+  var metaTable=
+    '<w:tbl><w:tblPr>'+
+    '<w:tblW w:w="9072" w:type="dxa"/>'+
+    '<w:tblBorders><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/><w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders>'+
+    '<w:tblLook w:val="0000"/></w:tblPr>'+
+    '<w:tr>'+
+    '<w:tc><w:tcPr><w:tcW w:w="4536" w:type="dxa"/></w:tcPr>'+
+    '<w:p><w:pPr><w:rPr>'+rpr+'</w:rPr></w:pPr>'+
+    fld('PAGE \* Arabic','1')+tr(' • ')+fld('NUMPAGES \* Arabic','1')+
+    '</w:p></w:tc>'+
+    '<w:tc><w:tcPr><w:tcW w:w="4536" w:type="dxa"/></w:tcPr>'+
+    '<w:p><w:pPr><w:jc w:val="right"/><w:rPr>'+rpr+'</w:rPr></w:pPr>'+
+    fld('TIME \@ "dd.MM.yyyy"','27.04.2026')+tr(' ')+fld('FILENAME \* MERGEFORMAT','BWH_Dokument')+
+    '</w:p></w:tc>'+
+    '</w:tr></w:tbl>';
+  return mkPkg(addrPara+metaTable,'');
 }
 
-function headerOoxml(pname, aort, showFields){
-  // Logo: small, left-aligned, ~2.5cm wide
-  var CX = 953257;   // ~2.65cm
-  var CY = 609600;   // ~1.69cm (maintain aspect of ~104x66px original)
-
-  var imgPara =
-    '<w:p><w:pPr><w:rPr><w:noProof/></w:rPr></w:pPr>'+
+// Header: table with logo left, Prozessname/Ablageort right
+function headerOoxml(pname,aort,showFields){
+  var CX=953257, CY=545306;
+  var imgRun=
     '<w:r><w:rPr><w:noProof/></w:rPr><w:drawing>'+
     '<wp:inline distT="0" distB="114300" distL="0" distR="0">'+
     '<wp:extent cx="'+CX+'" cy="'+CY+'"/>'+
     '<wp:effectExtent l="0" t="0" r="0" b="0"/>'+
-    '<wp:docPr id="100" name="waisehuus-logo"/>'+
-    '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>'+
+    '<wp:docPr id="100" name="logo"/><wp:cNvGraphicFramePr>'+
+    '<a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>'+
+    '</wp:cNvGraphicFramePr>'+
     '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'+
     '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
     '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-    '<pic:nvPicPr><pic:cNvPr id="100" name="waisehuus-logo"/><pic:cNvPicPr/></pic:nvPicPr>'+
+    '<pic:nvPicPr><pic:cNvPr id="100" name="logo"/><pic:cNvPicPr/></pic:nvPicPr>'+
     '<pic:blipFill><a:blip r:embed="logoImg"/>'+
     '<a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
     '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+CX+'" cy="'+CY+'"/></a:xfrm>'+
     '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'+
-    '</pic:pic></a:graphicData></a:graphic>'+
-    '</wp:inline></w:drawing></w:r></w:p>';
+    '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
 
-  // Prozessname + Ablageort right-aligned (only for intern)
-  var fieldParas = '';
+  var rightCell='<w:p><w:pPr><w:rPr><w:sz w:val="1"/></w:rPr></w:pPr></w:p>';
   if(showFields){
-    fieldParas =
+    rightCell=
       '<w:p><w:pPr><w:jc w:val="right"/><w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="18"/></w:rPr></w:pPr>'+
       '<w:r><w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="18"/></w:rPr><w:t>'+esc(pname||'Prozessname')+'</w:t></w:r></w:p>'+
       '<w:p><w:pPr><w:jc w:val="right"/><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
       '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr><w:t>'+esc(aort||'Ablageort')+'</w:t></w:r></w:p>';
   }
 
-  var imgParts =
+  // Table: logo left (~3.5cm), fields right (rest)
+  var hdrTable=
+    '<w:tbl><w:tblPr>'+
+    '<w:tblW w:w="9072" w:type="dxa"/>'+
+    '<w:tblBorders><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/><w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders>'+
+    '</w:tblPr>'+
+    '<w:tr>'+
+    '<w:tc><w:tcPr><w:tcW w:w="1984" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+
+    '<w:p><w:pPr><w:rPr><w:noProof/></w:rPr></w:pPr>'+imgRun+'</w:p>'+
+    '</w:tc>'+
+    '<w:tc><w:tcPr><w:tcW w:w="7088" w:type="dxa"/><w:vAlign w:val="top"/></w:tcPr>'+
+    rightCell+
+    '</w:tc>'+
+    '</w:tr></w:tbl>';
+
+  var imgParts=
     '<pkg:part pkg:name="/word/_rels/document.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml">'+
     '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
     '<Relationship Id="logoImg" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>'+
@@ -261,7 +243,7 @@ function headerOoxml(pname, aort, showFields){
     '<pkg:part pkg:name="/word/media/logo.png" pkg:contentType="image/png" pkg:compression="store">'+
     '<pkg:binaryData>'+LOGO+'</pkg:binaryData></pkg:part>';
 
-  return mkPkg(imgPara + fieldParas, imgParts);
+  return mkPkg(hdrTable, imgParts);
 }
 
 function apply(){
@@ -274,23 +256,22 @@ function apply(){
   var addr=buildAddr(dept);
   var pname=document.getElementById('prozessname').value.trim();
   var aort=document.getElementById('ablageort').value.trim();
-  var showFields = typ==='intern';
   setTimeout(function(){
     Word.run(function(ctx){
       var secs=ctx.document.sections;
       secs.load('items');
       return ctx.sync().then(function(){
         var s=secs.items[0];
-        var hdrOoxml = headerOoxml(pname, aort, showFields);
-        var ftrOoxml = footerOoxml(addr);
+        var hOoxml=headerOoxml(pname,aort,typ==='intern');
+        var fOoxml=footerOoxml(addr);
         s.getFooter('primary').clear();
-        s.getFooter('primary').insertOoxml(ftrOoxml,'Replace');
+        s.getFooter('primary').insertOoxml(fOoxml,'Replace');
         s.getFooter('firstPage').clear();
-        s.getFooter('firstPage').insertOoxml(ftrOoxml,'Replace');
+        s.getFooter('firstPage').insertOoxml(fOoxml,'Replace');
         s.getHeader('primary').clear();
-        s.getHeader('primary').insertOoxml(hdrOoxml,'Replace');
+        s.getHeader('primary').insertOoxml(hOoxml,'Replace');
         s.getHeader('firstPage').clear();
-        s.getHeader('firstPage').insertOoxml(hdrOoxml,'Replace');
+        s.getHeader('firstPage').insertOoxml(hOoxml,'Replace');
         return ctx.sync();
       });
     }).then(function(){
@@ -306,7 +287,6 @@ function apply(){
     });
   },50);
 }
-
 Office.onReady(function(info){
   if(info.host!==Office.HostType.Word){
     document.body.innerHTML='<div style="padding:20px;color:#c62828">Nur in Microsoft Word verfügbar.</div>';
