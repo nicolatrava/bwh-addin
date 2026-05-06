@@ -5,10 +5,10 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
   <Id>3a7f2b1c-9d4e-4f8a-b6c2-1e5d8a3f7b9e</Id>
-  <Version>1.0.4</Version>
+  <Version>1.1.0</Version>
   <ProviderName>BWH Basel</ProviderName>
   <DefaultLocale>de-DE</DefaultLocale>
-  <DisplayName DefaultValue="BWH Abteilungsauswahl"/>
+  <DisplayName DefaultValue="BWH Dokumentenvorlagen"/>
   <Description DefaultValue="Setzt die Abteilungsadresse in der Fusszeile"/>
   <IconUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/icon32.png"/>
   <HighResolutionIconUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/icon80.png"/>
@@ -71,7 +71,7 @@
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="BWH Vorlagen"/>
-        <bt:String id="TaskpaneLabel" DefaultValue="Abteilung waehlen"/>
+        <bt:String id="TaskpaneLabel" DefaultValue="Dokumentenvorlagen"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="TaskpaneDesc" DefaultValue="Abteilungsadresse in Fusszeile setzen"/>
