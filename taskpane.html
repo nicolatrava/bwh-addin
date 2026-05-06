@@ -150,8 +150,8 @@ function setTyp(t){
   document.getElementById('toc-sep').style.display=dok?'':'none';
   document.getElementById('intern-section').style.display=(t==='intern')?'':'none';
   var hints={
-    brief:'Brief: Briefvorlage-Layout mit Logo und Fusszeile',
-    intern:'Internes Dokument: Logo-Banner + Prozessname & Ablageort in Kopfzeile',
+    brief:'Brief: Briefvorlage mit Logo und Fusszeile',
+    intern:'Internes Dokument: Logo + Prozessname & Ablageort in Kopfzeile',
     extern:'Externes Dokument: Logo-Banner, keine internen Felder'
   };
   document.getElementById('typ-hint').textContent=hints[t];
@@ -179,20 +179,68 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 var PG_DOK  ='<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1134" w:left="1474" w:header="0" w:footer="680" w:gutter="0"/>';
 var PG_BRIEF='<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/>';
 
+/* ---- WH STYLES XML for flat OPC injection ---- */
+function WHStylesPart(){
+  var W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+  var ISM='<w:rFonts w:ascii="Instrument Sans Medium" w:hAnsi="Instrument Sans Medium" w:cs="Instrument Sans Medium"/>';
+  var sx='<w:styles '+W+'>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHberschrift1">'+
+      '<w:name w:val="WH Überschrift 1"/>'+
+      '<w:pPr><w:spacing w:before="330"/></w:pPr>'+
+      '<w:rPr>'+ISM+'<w:color w:val="A74F58"/><w:sz w:val="33"/><w:szCs w:val="40"/></w:rPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHberschrift2">'+
+      '<w:name w:val="WH Überschrift 2"/><w:basedOn w:val="WHberschrift1"/>'+
+      '<w:pPr><w:spacing w:before="120"/></w:pPr>'+
+      '<w:rPr>'+ISM+'<w:color w:val="A74F58"/><w:sz w:val="27"/></w:rPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHberschrift3">'+
+      '<w:name w:val="WH Überschrift 3"/><w:basedOn w:val="WHberschrift2"/>'+
+      '<w:pPr><w:spacing w:before="120"/></w:pPr>'+
+      '<w:rPr>'+ISM+'<w:color w:val="A74F58"/><w:sz w:val="21"/><w:szCs w:val="26"/></w:rPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHStandard">'+
+      '<w:name w:val="WH Standard"/>'+
+      '<w:rPr><w:color w:val="000000"/><w:sz w:val="20"/></w:rPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHAufzhlung">'+
+      '<w:name w:val="WH Aufzählung"/><w:basedOn w:val="WHStandard"/>'+
+      '<w:pPr><w:spacing w:before="120" w:line="288" w:lineRule="auto"/></w:pPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHDokumenttitelGross">'+
+      '<w:name w:val="WH Dokumenttitel Gross"/><w:basedOn w:val="WHberschrift1"/>'+
+      '<w:pPr><w:spacing w:before="400" w:after="400"/></w:pPr>'+
+      '<w:rPr><w:sz w:val="40"/><w:szCs w:val="40"/></w:rPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHDokumenttitelKlein">'+
+      '<w:name w:val="WH Dokumenttitel Klein"/><w:basedOn w:val="WHDokumenttitelGross"/>'+
+      '<w:rPr><w:sz w:val="32"/><w:szCs w:val="32"/></w:rPr>'+
+      '</w:style>';
+  sx+='<w:style w:type="paragraph" w:customStyle="1" w:styleId="WHVerzeichnis1">'+
+      '<w:name w:val="WH Verzeichnis 1."/><w:basedOn w:val="WHStandard"/>'+
+      '<w:pPr><w:spacing w:before="300" w:after="100"/></w:pPr>'+
+      '<w:rPr><w:color w:val="8C0C4C"/><w:sz w:val="21"/></w:rPr>'+
+      '</w:style>';
+  sx+='</w:styles>';
+  return '<pkg:part pkg:name="/word/styles.xml"'+
+    ' pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml">'+
+    '<pkg:xmlData>'+sx+'</pkg:xmlData></pkg:part>';
+}
+
 function mkPkg(body,extra,pgCfg){
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?mso-application progid="Word.Document"?>'+
     '<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">'+
     '<pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">'+
     '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document.xml"/>'+
-    '</Relationships></pkg:xmlData></pkg:part>'+(extra||'')+
+    '</Relationships></pkg:xmlData></pkg:part>'+
+    WHStylesPart()+(extra||'')+
     '<pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">'+
     '<pkg:xmlData><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '+
     'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '+
     'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '+
     'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '+
-    'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '+
-    'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">'+
+    'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
     '<w:body>'+body+'<w:sectPr>'+(pgCfg||PG_DOK)+'</w:sectPr></w:body></w:document></pkg:xmlData></pkg:part></pkg:package>';
 }
 
@@ -217,19 +265,19 @@ function footerOoxml(d){
     '<w:p><w:pPr><w:pStyle w:val="Fuzeile"/>'+
     '<w:tabs><w:tab w:val="right" w:pos="9072"/></w:tabs></w:pPr>'+
     fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74F58',16)+
-    t(' \u2022 ','A74F58',16)+
+    t(' • ','A74F58',16)+
     fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1','A74F58',16)+
     '<w:r>'+R('A74F58',16)+'<w:tab/></w:r>'+
     fld('FILENAME \\* MERGEFORMAT','Dokument','A74F58',16)+
-    t('  \u2022  ','A74F58',16)+
+    t('  •  ','A74F58',16)+
     fld('TIME \\@ \"dd.MM.yyyy\"','01.01.25','A74F58',16)+
     '</w:p>';
-  var addrL1='B\u00fcrgerliches Waisenhaus Basel  \u2022  '+d.name;
+  var addrL1='Bürgerliches Waisenhaus Basel  •  '+d.name;
   var parts=[d.street];
   if(d.extra)parts.push(d.extra);
   parts.push(d.plz+' Basel');
   parts.push('www.waisehuus.ch');
-  var addrL2=parts.join('  \u2022  ');
+  var addrL2=parts.join('  •  ');
   var line2=
     '<w:p><w:pPr><w:pStyle w:val="Fuzeile"/></w:pPr>'+
     '<w:r>'+R('A74F58',16)+'<w:t>'+esc(addrL1)+'</w:t></w:r>'+
@@ -239,94 +287,25 @@ function footerOoxml(d){
   return mkPkg(line1+line2,'');
 }
 
-/* ---- HEADER ---- */
-function imgParts(logoData){
-  return '<pkg:part pkg:name="/word/_rels/document.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml">'+
-    '<pkg:xmlData><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
-    '<Relationship Id="logoImg" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>'+
-    '</Relationships></pkg:xmlData></pkg:part>'+
-    '<pkg:part pkg:name="/word/media/logo.png" pkg:contentType="image/png" pkg:compression="store">'+
-    '<pkg:binaryData>'+logoData+'</pkg:binaryData></pkg:part>';
-}
-
-function drawingInline(extCx,extCy,spCx,spCy){
-  return '<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'+
-    '<wp:extent cx="'+extCx+'" cy="'+extCy+'"/>'+
-    '<wp:effectExtent l="0" t="0" r="0" b="6350"/>'+
-    '<wp:docPr id="100" name="logo"/>'+
-    '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>'+
-    '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'+
-    '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-    '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-    '<pic:nvPicPr><pic:cNvPr id="100" name="logo"/><pic:cNvPicPr/></pic:nvPicPr>'+
-    '<pic:blipFill><a:blip r:embed="logoImg"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
-    '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+spCx+'" cy="'+spCy+'"/></a:xfrm>'+
-    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'+
-    '</pic:pic></a:graphicData></a:graphic>'+
-    '</wp:inline></w:drawing>';
-}
-
-function drawingAnchor(cx,cy,posOffX){
-  return '<w:drawing><wp:anchor distT="0" distB="0" distL="114300" distR="114300"'+
-    ' simplePos="0" relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">'+
-    '<wp:simplePos x="0" y="0"/>'+
-    '<wp:positionH relativeFrom="column"><wp:posOffset>'+posOffX+'</wp:posOffset></wp:positionH>'+
-    '<wp:positionV relativeFrom="paragraph"><wp:posOffset>0</wp:posOffset></wp:positionV>'+
-    '<wp:extent cx="'+cx+'" cy="'+cy+'"/>'+
-    '<wp:effectExtent l="0" t="0" r="0" b="0"/>'+
-    '<wp:wrapNone/>'+
-    '<wp:docPr id="100" name="logo"/>'+
-    '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>'+
-    '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'+
-    '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-    '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-    '<pic:nvPicPr><pic:cNvPr id="100" name="logo"/><pic:cNvPicPr/></pic:nvPicPr>'+
-    '<pic:blipFill><a:blip r:embed="logoImg"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
-    '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm>'+
-    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'+
-    '</pic:pic></a:graphicData></a:graphic>'+
-    '</wp:anchor></w:drawing>';
-}
-
-function internText(pname,aort){
-  var sp='<w:spacing w:before="0" w:after="0"/>';
-  return '<w:p><w:pPr><w:jc w:val="right"/>'+sp+'<w:rPr>'+R('A74E57',18,true)+'</w:rPr></w:pPr>'+
-    '<w:r>'+R('A74E57',18,true)+'<w:t>'+esc(pname||'Prozessname')+'</w:t></w:r></w:p>'+
-    '<w:p><w:pPr><w:jc w:val="right"/>'+sp+'<w:rPr>'+R('A74E57',16)+'</w:rPr></w:pPr>'+
-    '<w:r>'+R('A74E57',16)+'<w:t>'+esc(aort||'Ablageort')+'</w:t></w:r></w:p>';
-}
-
-function headerOoxml(pname,aort,typ,isGross){
-  var logo,drawing,para;
-
+/* ---- HEADER via insertHtml (reliable image embedding) ---- */
+function headerHtml(pname,aort,typ,isGross){
+  var imgData, hpx;
   if(typ==='brief'){
-    /* Brief: floating anchor, Briefvorlage-Logo */
-    logo=LOGO_BRIEF;
-    drawing=drawingAnchor(7545600,1623600,-931923);
-    para='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/></w:pPr>'+
-         '<w:r><w:rPr><w:noProof/></w:rPr>'+drawing+'</w:r></w:p>';
-    return mkPkg(para,imgParts(logo),PG_BRIEF);
-  } else {
-    /* Internes/Externes Dokument: inline, volle Breite */
-    var extCx,extCy,spCx,spCy,indStr;
-    if(isGross){
-      logo=LOGO_DOK_GROSS;
-      extCx=7559042; extCy=1631950; spCx=7586564; spCy=1637892;
-      indStr='<w:ind w:left="-1474" w:right="-1418"/>';
-    }else{
-      logo=LOGO_DOK_KLEIN;
-      extCx=7569200; extCy=1259574; spCx=7628007; spCy=1269360;
-      indStr='<w:ind w:left="-1474"/>';
-    }
-    drawing=drawingInline(extCx,extCy,spCx,spCy);
-    para='<w:p>'+
-         '<w:pPr><w:pStyle w:val="Kopfzeile"/>'+
-         '<w:tabs><w:tab w:val="clear" w:pos="9072"/></w:tabs>'+
-         indStr+'</w:pPr>'+
-         '<w:r><w:rPr><w:noProof/></w:rPr>'+drawing+'</w:r></w:p>';
-    var body=para+(typ==='intern'?internText(pname,aort):'');
-    return mkPkg(body,imgParts(logo),PG_DOK);
+    imgData=LOGO_BRIEF; hpx='4.5cm';
+  }else if(isGross){
+    imgData=LOGO_DOK_GROSS; hpx='4.5cm';
+  }else{
+    imgData=LOGO_DOK_KLEIN; hpx='3.5cm';
   }
+  var html='<img src="data:image/png;base64,'+imgData+'" '+
+    'style="display:block;width:100%;height:'+hpx+'" alt=""/>';
+  if(typ==='intern'){
+    html+='<p style="text-align:right;color:#A74E57;font-size:9pt;font-weight:bold;margin:0;">'+
+      esc(pname||'Prozessname')+'</p>';
+    html+='<p style="text-align:right;color:#A74E57;font-size:8pt;margin:0;">'+
+      esc(aort||'Ablageort')+'</p>';
+  }
+  return html;
 }
 
 /* ---- TOC ---- */
@@ -345,65 +324,48 @@ function tocOoxml(){
   return mkPkg(body,'',PG_DOK);
 }
 
-/* ---- STYLES ---- */
-function applyWHStyles(ctx){
-  try{
-    var defs=[
-      {name:'WH \u00dcberschrift 1',sz:16.5,color:'A74F58',font:'Instrument Sans Medium',sp:16.5},
-      {name:'WH \u00dcberschrift 2',sz:13.5,color:'A74F58',font:'Instrument Sans Medium',sp:6},
-      {name:'WH \u00dcberschrift 3',sz:10.5,color:'A74F58',font:'Instrument Sans Medium',sp:6},
-      {name:'WH Standard',sz:10,color:'000000',font:'',sp:0},
-      {name:'WH Aufz\u00e4hlung',sz:10,color:'000000',font:'',sp:6},
-      {name:'WH Dokumenttitel Gross',sz:20,color:'A74F58',font:'',sp:20},
-      {name:'WH Dokumenttitel Klein',sz:16,color:'A74F58',font:'',sp:0},
-    ];
-    defs.forEach(function(d){
-      try{
-        var st=ctx.document.addStyle(d.name,Word.StyleType.Paragraph);
-        if(d.font)st.font.name=d.font;
-        st.font.size=d.sz; st.font.color=d.color;
-        if(d.sp>0)st.paragraphFormat.spaceBeforePoints=d.sp;
-      }catch(e){}
-    });
-  }catch(e){}
-}
-
 /* ---- APPLY ---- */
 function apply(){
   if(!dept)return;
   var btn=document.getElementById('applyBtn');
   var st=document.getElementById('status');
-  btn.disabled=true; btn.textContent='Wird angewendet\u2026'; st.className='status';
+  btn.disabled=true; btn.textContent='Wird angewendet…'; st.className='status';
   var pname=document.getElementById('prozessname').value.trim();
   var aort=document.getElementById('ablageort').value.trim();
   var fOoxml=footerOoxml(dept);
-  var hOoxml=headerOoxml(pname,aort,typ,logoGross);
+  var hHtml=headerHtml(pname,aort,typ,logoGross);
+  /* styles-only pkg to inject WH Formatvorlagen */
+  var stylesPkg=mkPkg('<w:p/>','');
   setTimeout(function(){
     Word.run(function(ctx){
       var secs=ctx.document.sections;
       secs.load('items');
       return ctx.sync().then(function(){
         var s=secs.items[0];
+        /* Footer via OOXML (field codes needed) */
         s.getFooter('primary').clear();
         s.getFooter('primary').insertOoxml(fOoxml,'Replace');
         s.getFooter('firstPage').clear();
         s.getFooter('firstPage').insertOoxml(fOoxml,'Replace');
+        /* Header via HTML (reliable image embedding) */
         s.getHeader('primary').clear();
-        s.getHeader('primary').insertOoxml(hOoxml,'Replace');
+        s.getHeader('primary').insertHtml(hHtml,'Replace');
         s.getHeader('firstPage').clear();
-        s.getHeader('firstPage').insertOoxml(hOoxml,'Replace');
+        s.getHeader('firstPage').insertHtml(hHtml,'Replace');
+        /* WH Formatvorlagen via OOXML styles part */
+        ctx.document.body.insertOoxml(stylesPkg,'End');
+        /* TOC */
         if(withToc){
           ctx.document.body.insertOoxml(tocOoxml(),'Start');
         }
-        applyWHStyles(ctx);
         return ctx.sync();
       });
     }).then(function(){
       var lbl={brief:'Brief',intern:'Int. Dokument',extern:'Ext. Dokument'};
-      var lg=typ!=='brief'?(logoGross?' \u2022 Gross':' \u2022 Klein'):'';
-      var toc=withToc?' \u2022 IVZ':'';
+      var lg=typ!=='brief'?(logoGross?' • Gross':' • Klein'):'';
+      var toc=withToc?' • IVZ':'';
       st.className='status ok';
-      st.textContent='\u2713 '+dept.name+' | '+lbl[typ]+lg+toc;
+      st.textContent='✓ '+dept.name+' | '+lbl[typ]+lg+toc+' | Formatvorlagen hinterlegt';
       btn.disabled=false; btn.textContent='Auf Dokument anwenden';
     }).catch(function(e){
       st.className='status err';
@@ -415,7 +377,7 @@ function apply(){
 
 Office.onReady(function(info){
   if(info.host!==Office.HostType.Word){
-    document.body.innerHTML='<div style="padding:20px;color:#c62828">Nur in Microsoft Word verf\u00fcgbar.</div>';
+    document.body.innerHTML='<div style="padding:20px;color:#c62828">Nur in Microsoft Word verfügbar.</div>';
   }
   setTyp('intern');
 });
