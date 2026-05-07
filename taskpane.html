@@ -353,29 +353,55 @@ function mkHdrPkg(bodyContent,imgB64){
     '<pkg:xmlData><w:document '+NS+'><w:body>'+bodyContent+'</w:body></w:document></pkg:xmlData></pkg:part>'+
     '</pkg:package>';
 }
+function _hdrTable(leftContent,rightContent){
+  var nb='<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>';
+  return '<w:tbl>'+
+    '<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>'+nb+'</w:tblBorders>'+
+    '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>'+
+    '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr>'+
+    '<w:tblGrid><w:gridCol w:w="6500"/><w:gridCol w:w="2514"/></w:tblGrid>'+
+    '<w:tr>'+
+    '<w:tc><w:tcPr><w:tcW w:w="6500" w:type="dxa"/></w:tcPr>'+leftContent+'</w:tc>'+
+    '<w:tc><w:tcPr><w:tcW w:w="2514" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'+rightContent+'</w:tc>'+
+    '</w:tr></w:tbl>';
+}
 function headerOoxml(pname,aort,typ,isGross){
-  var imgB64, drawing;
+  var imgB64, body;
   if(typ==='brief'){
     imgB64=LOGO_BRIEF_B64;
-    drawing='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
+    body='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
       _blipAnchor(7654730,1518080)+'</w:r></w:p><w:p/>';
-  }else if(isGross){
-    imgB64=LOGO_GROSS_B64;
-    drawing='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:tabs><w:tab w:val="clear" w:pos="9072"/></w:tabs><w:ind w:left="-1474" w:right="-1418"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
-      _blipFx('',7559042,1631950,7586564,1637892,6350)+'</w:r></w:p>';
-  }else{
-    imgB64=LOGO_KLEIN_B64;
-    drawing='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:tabs><w:tab w:val="clear" w:pos="9072"/></w:tabs><w:ind w:left="-1474" w:right="-1418"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
-      _blip('',7586564,1262302,7586564,1262302)+'</w:r></w:p>';
-  }
-  var body=drawing;
-  if(typ==='intern'){
-    body+='<w:p><w:pPr><w:jc w:val="right"/></w:pPr>'+
+  }else if(typ==='intern'){
+    /* 2-column table: logo left (~72%), Prozessname+Ablageort right (~28%) */
+    imgB64=isGross?LOGO_GROSS_B64:LOGO_KLEIN_B64;
+    var lCx=4126500;
+    var lCy=isGross?891000:687000;
+    var logoP='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
+      '<w:r><w:rPr><w:noProof/></w:rPr>'+_blip('',lCx,lCy,lCx,lCy)+'</w:r></w:p>';
+    var rightP=
+      '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="40"/></w:pPr>'+
       '<w:r><w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr>'+
       '<w:t>'+esc(pname||'Prozessname')+'</w:t></w:r></w:p>'+
-      '<w:p><w:pPr><w:jc w:val="right"/></w:pPr>'+
+      '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
       '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
       '<w:t>'+esc(aort||'Ablageort')+'</w:t></w:r></w:p>';
+    body=_hdrTable(logoP,rightP);
+  }else{
+    /* extern: full-width logo banner matching lang/kurz templates */
+    if(isGross){
+      imgB64=LOGO_GROSS_B64;
+      body='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:tabs><w:tab w:val="clear" w:pos="9072"/></w:tabs><w:ind w:left="-1474" w:right="-1418"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
+        _blipFx('',7559042,1631950,7586564,1637892,6350)+'</w:r></w:p>';
+    }else{
+      imgB64=LOGO_KLEIN_B64;
+      body='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:tabs><w:tab w:val="clear" w:pos="9072"/></w:tabs><w:ind w:left="-1474" w:right="-1418"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
+        _blip('',7586564,1262302,7586564,1262302)+'</w:r></w:p>';
+    }
   }
   return mkHdrPkg(body,imgB64);
 }
@@ -406,7 +432,14 @@ function apply(){
   var aort=document.getElementById('ablageort').value.trim();
   var fOoxml=footerOoxml(dept);
   var hOoxml=headerOoxml(pname,aort,typ,logoGross);
-  var stylesPkg=mkPkg('<w:p/>','');
+  /* Insert hidden paragraphs using each WH style so Word imports the style definitions */
+  var _sids=['WHberschrift1','WHberschrift2','WHberschrift3','WHStandard','WHAufzhlung','WHDokumenttitelGross','WHDokumenttitelKlein','WHVerzeichnis1'];
+  var _sb=_sids.map(function(id){
+    return '<w:p><w:pPr><w:pStyle w:val="'+id+'"/><w:spacing w:before="0" w:after="0"/>'+
+           '<w:rPr><w:vanish/></w:rPr></w:pPr>'+
+           '<w:r><w:rPr><w:vanish/></w:rPr><w:t> </w:t></w:r></w:p>';
+  }).join('');
+  var stylesPkg=mkPkg(_sb,'');
   setTimeout(function(){
     Word.run(function(ctx){
       var secs=ctx.document.sections;
