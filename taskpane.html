@@ -227,11 +227,6 @@ function WHStylesPart(){
       '<w:pPr><w:spacing w:before="300" w:after="100"/></w:pPr>'+
       '<w:rPr><w:color w:val="8C0C4C"/><w:sz w:val="21"/></w:rPr>'+
       '</w:style>';
-  sx+='<w:style w:type="paragraph" w:styleId="Fuzeile">'+
-      '<w:name w:val="footer"/><w:aliases w:val="WH Fußzeile"/>'+
-      '<w:pPr><w:tabs><w:tab w:val="left" w:pos="644"/></w:tabs></w:pPr>'+
-      '<w:rPr>'+ISM+'<w:color w:val="A74F58"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
-      '</w:style>';
   sx+='</w:styles>';
   return '<pkg:part pkg:name="/word/styles.xml"'+
     ' pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml">'+
@@ -410,16 +405,15 @@ function headerOoxml(pname,aort,typ,isGross,isFirst){
     body='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>'+
       _blipAnchor(7654730,1518080)+'</w:r></w:p><w:p/>';
   }else if(typ==='intern'){
-    /* 2-column table: narrow logo left (3051 dxa / ~34%), Prozessname+Ablageort right (5963 dxa / ~66%) */
-    /* Matches intern template proportions (3261/6370 dxa scaled to text width 9014) */
-    var lCx=1938000;
+    /* 2-column table: logo left (6000 dxa / ~67%), Prozessname+Ablageort right (3014 dxa / ~33%) */
+    var lCx=3810000;
     var lCy;
     if(isFirst){
       imgB64=isGross?LOGO_GROSS_B64:LOGO_KLEIN_B64;
-      lCy=isGross?419000:323000;
+      lCy=isGross?823000:636000;
     }else{
       imgB64=LOGO_DEFAULT_B64;
-      lCy=322000;
+      lCy=634000;
     }
     var logoP='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
       '<w:r><w:rPr><w:noProof/></w:rPr>'+_blip('',lCx,lCy,lCx,lCy)+'</w:r></w:p>';
@@ -430,7 +424,7 @@ function headerOoxml(pname,aort,typ,isGross,isFirst){
       '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
       '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
       '<w:t>'+esc(aort||'Ablageort')+'</w:t></w:r></w:p>';
-    body=_hdrTableW(logoP,rightP,3051,5963);
+    body=_hdrTableW(logoP,rightP,6000,3014);
   }else{
     /* extern: full-width logo banner */
     if(isFirst){
