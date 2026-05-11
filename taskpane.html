@@ -178,8 +178,8 @@ function sel(el,name,street,plz,extra){
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* Page configs */
-var PG_DOK  ='<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1134" w:left="1474" w:header="0" w:footer="680" w:gutter="0"/><w:titlePg/>';
-var PG_BRIEF='<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/><w:titlePg/>';
+var PG_DOK  ='<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1418" w:bottom="1134" w:left="1474" w:header="0" w:footer="680" w:gutter="0"/>';
+var PG_BRIEF='<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/>';
 
 /* ---- WH STYLES XML for flat OPC injection ---- */
 function WHStylesPart(){
@@ -455,13 +455,9 @@ function apply(){
       return ctx.sync().then(function(){
         var s=secs.items[0];
         s.getFooter('primary').clear();
-        s.getFooter('primary').insertOoxml(fPrimaryOoxml,'Replace');
-        s.getFooter('firstPage').clear();
-        s.getFooter('firstPage').insertOoxml(fOoxml,'Replace');
+        s.getFooter('primary').insertOoxml(fOoxml,'Replace');
         s.getHeader('primary').clear();
         s.getHeader('primary').insertOoxml(hOoxml,'Replace');
-        s.getHeader('firstPage').clear();
-        s.getHeader('firstPage').insertOoxml(hOoxml,'Replace');
         ctx.document.body.insertOoxml(stylesPkg,'End');
         if(withToc){
           ctx.document.body.insertOoxml(tocOoxml(),'Start');
@@ -472,11 +468,11 @@ function apply(){
       var lbl={brief:'Brief',intern:'Int. Dokument',extern:'Ext. Dokument'};
       var lg=typ!=='brief'?(logoGross?' • Gross':' • Klein'):'';
       var toc=withToc?' • IVZ':'';
-      st.className='status ok';
+      st.style.display=''; st.className='status ok';
       st.textContent='✓ '+dept.name+' | '+lbl[typ]+lg+toc+' | Formatvorlagen hinterlegt';
       btn.disabled=false; btn.textContent='Auf Dokument anwenden';
     }).catch(function(e){
-      st.className='status err';
+      st.style.display=''; st.className='status err';
       st.textContent='Fehler: '+(e.message||String(e));
       btn.disabled=false; btn.textContent='Auf Dokument anwenden';
     });
