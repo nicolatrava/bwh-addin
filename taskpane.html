@@ -490,12 +490,6 @@ function apply(){
       secs.load('items');
       return ctx.sync().then(function(){
         var s=secs.items[0];
-        /* Enable different first-page header/footer so titlePg is set */
-        s.load('properties');
-        return ctx.sync();
-      }).then(function(){
-        var s=secs.items[0];
-        s.properties.differentFirstPageHeaderFooter=true;
         s.getFooter('primary').clear();
         s.getFooter('primary').insertOoxml(fPrimaryOoxml,'Replace');
         s.getFooter('firstPage').clear();
