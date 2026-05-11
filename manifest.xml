@@ -5,14 +5,14 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
   <Id>3a7f2b1c-9d4e-4f8a-b6c2-1e5d8a3f7b9e</Id>
-  <Version>1.1.0.0</Version>
+  <Version>1.2.0.0</Version>
   <ProviderName>BWH Basel</ProviderName>
   <DefaultLocale>de-DE</DefaultLocale>
   <DisplayName DefaultValue="BWH Dokumentenvorlagen"/>
   <Description DefaultValue="Setzt die Abteilungsadresse in der Fusszeile"/>
   <IconUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/icon32.png"/>
   <HighResolutionIconUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/icon80.png"/>
-  <SupportUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html"/>
+  <SupportUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=2"/>
   <AppDomains>
     <AppDomain>https://nicolatrava.github.io</AppDomain>
   </AppDomains>
@@ -20,7 +20,7 @@
     <Host Name="Document"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html"/>
+    <SourceLocation DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=2"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -65,7 +65,7 @@
         <bt:Image id="Icon80" DefaultValue="https://nicolatrava.github.io/bwh-addin/icon80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="TaskpaneUrl" DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html"/>
+        <bt:Url id="TaskpaneUrl" DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=2"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="BWH Vorlagen"/>
