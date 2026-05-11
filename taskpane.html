@@ -267,12 +267,11 @@ function t(s,color,sz,bold){
 
 /* ---- FOOTER ---- */
 function _footerLine1(){
-  return '<w:p><w:pPr><w:pStyle w:val="Fuzeile"/>'+
-    '<w:tabs><w:tab w:val="right" w:pos="9072"/></w:tabs></w:pPr>'+
+  return '<w:p><w:pPr><w:pStyle w:val="Fuzeile"/></w:pPr>'+
     fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74F58',16)+
     t(' • ','A74F58',16)+
     fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1','A74F58',16)+
-    '<w:r>'+R('A74F58',16)+'<w:tab/></w:r>'+
+    t('  •  ','A74F58',16)+
     fld('FILENAME \\* MERGEFORMAT','Dokument','A74F58',16)+
     t('  •  ','A74F58',16)+
     fld('TIME \\@ \"dd.MM.yy\"','01.01.25','A74F58',16)+
@@ -389,8 +388,8 @@ function headerOoxml(pname,aort,typ,isGross){
   }else if(typ==='intern'){
     /* 2-column table: wider logo left (7500 dxa / ~83%), Prozessname+Ablageort right (1514 dxa / ~17%) */
     imgB64=isGross?LOGO_GROSS_B64:LOGO_KLEIN_B64;
-    var lCx=4762500;
-    var lCy=isGross?1024000:786000;
+    var lCx=5400000;
+    var lCy=isGross?1161000:891000;
     var logoP='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
       '<w:r><w:rPr><w:noProof/></w:rPr>'+_blip('',lCx,lCy,lCx,lCy)+'</w:r></w:p>';
     var rightP=
