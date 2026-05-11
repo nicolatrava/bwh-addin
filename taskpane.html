@@ -234,6 +234,7 @@ function WHStylesPart(){
 
 /* Only used for footer/TOC (no images) */
 function mkPkg(body,extra,pgCfg){
+  var sect=(pgCfg===false)?'':'<w:sectPr>'+(pgCfg||PG_DOK)+'</w:sectPr>';
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?mso-application progid="Word.Document"?>'+
     '<pkg:package xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage">'+
     '<pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">'+
@@ -247,7 +248,7 @@ function mkPkg(body,extra,pgCfg){
     'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '+
     'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '+
     'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-    '<w:body>'+body+'<w:sectPr>'+(pgCfg||PG_DOK)+'</w:sectPr></w:body></w:document></pkg:xmlData></pkg:part></pkg:package>';
+    '<w:body>'+body+sect+'</w:body></w:document></pkg:xmlData></pkg:part></pkg:package>';
 }
 
 function R(color,sz,bold){
@@ -291,11 +292,11 @@ function footerOoxml(d){
     '<w:r>'+R('A74F58',16)+'<w:br/></w:r>'+
     '<w:r>'+R('A74F58',16)+'<w:t>'+esc(addrL2)+'</w:t></w:r>'+
     '</w:p>';
-  return mkPkg(_footerLine1()+line2,'');
+  return mkPkg(_footerLine1()+line2,'',false);
 }
 /* Primary footer (pages 2+): page info only, matching template footer2.xml */
 function footerPrimaryOoxml(){
-  return mkPkg(_footerLine1(),'');
+  return mkPkg(_footerLine1(),'',false);
 }
 
 /* ---- HEADER via insertOoxml with embedded binary image ---- */
@@ -449,16 +450,14 @@ function apply(){
            '<w:rPr><w:vanish/></w:rPr></w:pPr>'+
            '<w:r><w:rPr><w:vanish/></w:rPr><w:t> </w:t></w:r></w:p>';
   }).join('');
-  var stylesPkg=mkPkg(_sb,'');
+  var stylesPkg=mkPkg(_sb,'',false);
   setTimeout(function(){
     Word.run(function(ctx){
       var secs=ctx.document.sections;
       secs.load('items');
       return ctx.sync().then(function(){
         var s=secs.items[0];
-        s.getFooter('primary').clear();
         s.getFooter('primary').insertOoxml(fOoxml,'Replace');
-        s.getHeader('primary').clear();
         s.getHeader('primary').insertOoxml(hOoxml,'Replace');
         ctx.document.body.insertOoxml(stylesPkg,'End');
         if(withToc){
