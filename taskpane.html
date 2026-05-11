@@ -371,7 +371,7 @@ function _hdrTableW(leftContent,rightContent,lW,rW){
     '<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
     '<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>';
   return '<w:tbl>'+
-    '<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>'+nb+'</w:tblBorders>'+
+    '<w:tblPr><w:tblW w:w="'+(lW+rW)+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders>'+nb+'</w:tblBorders>'+
     '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>'+
     '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr>'+
     '<w:tblGrid><w:gridCol w:w="'+lW+'"/><w:gridCol w:w="'+rW+'"/></w:tblGrid>'+
@@ -392,9 +392,10 @@ function headerOoxml(pname,aort,typ,isGross){
   }else if(typ==='intern'){
     /* 2-column table: wider logo left (7500 dxa / ~83%), Prozessname+Ablageort right (1514 dxa / ~17%) */
     imgB64=isGross?LOGO_GROSS_B64:LOGO_KLEIN_B64;
-    var lCx=6500000;
-    var lCy=isGross?1398000:1085000;
-    var logoP='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
+    /* Left col 6500 dxa = 11.46cm; logo sized to fill it. Gross aspect 2472/534=4.629, Klein 2481/414=5.993 */
+    var lCx=4127500;
+    var lCy=isGross?892000:688000;
+    var logoP='<w:p><w:pPr><w:pStyle w:val="Kopfzeile"/><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
       '<w:r><w:rPr><w:noProof/></w:rPr>'+_blip('',lCx,lCy,lCx,lCy)+'</w:r></w:p>';
     var rightP=
       '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="40"/></w:pPr>'+
@@ -403,7 +404,7 @@ function headerOoxml(pname,aort,typ,isGross){
       '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
       '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
       '<w:t>'+esc(aort||'Ablageort')+'</w:t></w:r></w:p>';
-    body=_hdrTableW(logoP,rightP,7500,1514);
+    body=_hdrTableW(logoP,rightP,6500,2514);
   }else{
     /* extern: full-width logo banner matching lang/kurz templates */
     if(isGross){
