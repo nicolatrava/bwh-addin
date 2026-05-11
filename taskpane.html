@@ -514,11 +514,11 @@ function apply(){
       var lbl={brief:'Brief',intern:'Int. Dokument',extern:'Ext. Dokument'};
       var lg=typ!=='brief'?(logoGross?' • Gross':' • Klein'):'';
       var toc=withToc?' • IVZ':'';
-      st.className='status ok';
+      st.style.display=''; st.className='status ok';
       st.textContent='✓ '+dept.name+' | '+lbl[typ]+lg+toc+' | Formatvorlagen hinterlegt';
       btn.disabled=false; btn.textContent='Auf Dokument anwenden';
     }).catch(function(e){
-      st.className='status err';
+      st.style.display=''; st.className='status err';
       st.textContent='Fehler: '+(e.message||String(e));
       btn.disabled=false; btn.textContent='Auf Dokument anwenden';
     });
