@@ -12,7 +12,7 @@
   <Description DefaultValue="Setzt die Abteilungsadresse in der Fusszeile"/>
   <IconUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/icon32.png"/>
   <HighResolutionIconUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/icon80.png"/>
-  <SupportUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=2"/>
+  <SupportUrl DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=3"/>
   <AppDomains>
     <AppDomain>https://nicolatrava.github.io</AppDomain>
   </AppDomains>
@@ -20,7 +20,7 @@
     <Host Name="Document"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=2"/>
+    <SourceLocation DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=3"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -65,7 +65,7 @@
         <bt:Image id="Icon80" DefaultValue="https://nicolatrava.github.io/bwh-addin/icon80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="TaskpaneUrl" DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=2"/>
+        <bt:Url id="TaskpaneUrl" DefaultValue="https://nicolatrava.github.io/bwh-addin/taskpane.html?v=3"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="BWH Vorlagen"/>
