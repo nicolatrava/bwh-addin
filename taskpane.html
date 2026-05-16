@@ -110,10 +110,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
   <div class="step" id="inh-step" style="margin-top:14px">
     <div class="step-title"><span class="sn">3</span>Inhalt einf&uuml;gen</div>
     <div class="toggle-row" id="inh-row">
-      <button class="tbtn on" id="btn-kein"   onclick="setInhalt('kein')">Kein</button>
-      <button class="tbtn"    id="btn-muster" onclick="setInhalt('muster')">Musterinhalt</button>
-      <button class="tbtn"    id="btn-ivz"    onclick="setInhalt('ivz')">Inhaltsverz.</button>
-      <button class="tbtn"    id="btn-titel"  onclick="setInhalt('titel')">Titelblatt</button>
+      <button class="tbtn" id="btn-muster" onclick="toggleInhalt('muster')">Musterinhalt</button>
+      <button class="tbtn" id="btn-ivz"    onclick="toggleInhalt('ivz')">Inhaltsverz.</button>
+      <button class="tbtn" id="btn-titel"  onclick="toggleInhalt('titel')">Titelblatt</button>
     </div>
     <div class="hint" style="margin-top:6px" id="inh-hint"></div>
   </div>
@@ -235,7 +234,7 @@ var BODY_TITELBLATT = '<w:p w14:paraId="1B506881" w14:textId="77777777" w:rsidR=
    ═══════════════════════════════════════════════════════════════════════════ */
 var typ    = 'intern';   // 'intern' | 'extern' | 'brief'
 var fmt    = 'hoch';     // 'hoch'   | 'quer'
-var inhalt = 'kein';     // 'kein'   | 'muster' | 'ivz' | 'titel'
+var inhaltSet = {};      // {muster:bool, ivz:bool, titel:bool}
 var dept   = null;       // {name, street, plz, extra}
 var _applyN = 0;
 
@@ -264,30 +263,27 @@ function setFmt(v){
     document.getElementById('btn-'+k).className='tbtn'+(k===v?' on':'');
   });
   // Titelblatt only available for Hoch
-  if(v==='quer' && inhalt==='titel'){setInhalt('kein');}
+  if(v==='quer'){inhaltSet['titel']=false; document.getElementById('btn-titel').className='tbtn'; document.getElementById('btn-titel').disabled=true;} else {document.getElementById('btn-titel').disabled=false;}
   updateInhaltHints();
 }
 
 var INH_HINTS={
-  kein:'Kein Musterinhalt wird eingefügt.',
-  muster:'Musterinhalt mit Beispieltexten und Formatvorlagen.',
-  ivz:'Inhaltsverzeichnis (F9 zum Aktualisieren).',
-  titel:'Titelblatt mit Deckbild (nur A4 Hoch).'
+  muster:'Musterinhalt',
+  ivz:'Inhaltsverzeichnis',
+  titel:'Titelblatt (nur A4 Hoch)'
 };
 
-function setInhalt(v){
-  inhalt=v;
-  ['kein','muster','ivz','titel'].forEach(function(k){
-    document.getElementById('btn-'+k).className='tbtn'+(k===v?' on':'');
-  });
-  // Disable Titelblatt for Quer
-  document.getElementById('btn-titel').disabled=(fmt==='quer');
-  document.getElementById('inh-hint').textContent=INH_HINTS[v]||'';
+function toggleInhalt(v){
+  inhaltSet[v]=!inhaltSet[v];
+  document.getElementById('btn-'+v).className='tbtn'+(inhaltSet[v]?' on':'');
+  // Build hint from selected items
+  var sel=Object.keys(inhaltSet).filter(function(k){return inhaltSet[k];});
+  var hints=sel.map(function(k){return INH_HINTS[k]||k;});
+  document.getElementById('inh-hint').textContent=hints.join(' + ')||'';
 }
 
 function updateInhaltHints(){
   document.getElementById('btn-titel').disabled=(fmt==='quer');
-  if(fmt==='quer' && inhalt==='titel'){setInhalt('kein');}
 }
 
 function selDept(el,name,street,plz,extra){
@@ -312,7 +308,19 @@ var DOC_NS =
   'xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" ' +
   'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ' +
   'xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" ' +
-  'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+  'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" ' +
+  'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" ' +
+  'xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" ' +
+  'xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" ' +
+  'xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" ' +
+  'xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" ' +
+  'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" ' +
+  'xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" ' +
+  'xmlns:v="urn:schemas-microsoft-com:vml" ' +
+  'xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+  'xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" ' +
+  'xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" ' +
+  'mc:Ignorable="w14 w15 w16se w16cid w16 wp14"';
 
 /* Field helper */
 function fld(instr, cached, clr, sz){
@@ -711,7 +719,9 @@ function apply(){
 
   var hdrPkg = mkHdrPkg(isQuer, isExtern, pname, aort, dept.name);
   var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer);
-  var contentPkg = (inhalt !== 'kein' && typ !== 'brief') ? mkContentPkg(inhalt, isQuer) : null;
+  var selectedInhalt = typ !== 'brief' ? Object.keys(inhaltSet).filter(function(k){return inhaltSet[k];}) : [];
+  // Insert in reverse order so final doc order is: titel → ivz → muster
+  var contentPkgs = ['muster','ivz','titel'].filter(function(k){return selectedInhalt.indexOf(k)>=0;}).map(function(k){return mkContentPkg(k,isQuer);});
 
   setTimeout(function(){
     Word.run(function(ctx){
@@ -721,15 +731,16 @@ function apply(){
         var s = sects.items[0];
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
-        if(contentPkg){
-          ctx.document.body.insertOoxml(contentPkg, Word.InsertLocation.start);
-        }
+        // Insert content in reverse order so: Titelblatt → IVZ → Musterinhalt ends at top
+        contentPkgs.slice().reverse().forEach(function(pkg){
+          ctx.document.body.insertOoxml(pkg, Word.InsertLocation.start);
+        });
         return ctx.sync();
       });
     }).then(function(){
       var lbl = {brief:'Brief', intern:'Int. Dok.', extern:'Ext. Dok.'};
       var fmtLbl = (fmt==='quer') ? ' A4 Quer' : ' A4 Hoch';
-      var inhLbl = inhalt !== 'kein' ? ' • '+inhalt : '';
+      var inhLbl = selectedInhalt.length ? ' • '+selectedInhalt.join('+') : '';
       showStatus('✓ '+dept.name+' | '+lbl[typ]+fmtLbl+inhLbl, 'ok');
       btn.disabled = false;
       btn.textContent = 'Auf Dokument anwenden';
@@ -751,7 +762,7 @@ Office.onReady(function(info){
   }
   setTyp('intern');
   setFmt('hoch');
-  setInhalt('kein');
+  inhaltSet={}; ['muster','ivz','titel'].forEach(function(k){document.getElementById('btn-'+k).className='tbtn';});
   /* Set today's date as default */
   var d = new Date();
   var dd = String(d.getDate()).padStart(2,'0');
