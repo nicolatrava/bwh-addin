@@ -197,8 +197,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
         <input type="text" id="datum" placeholder="TT.MM.JJ"/>
       </div>
       <label class="toggle-check">
-        <input type="checkbox" id="neue-version"/>
-        <span>Neue Version (Versionsnummer erh&ouml;hen)</span>
+        <input type="checkbox" id="neue-version" onchange="onNeueVersion(this.checked)"/>
+        <span>Neue Version &rarr; Datum auf heute setzen</span>
       </label>
     </div>
   </div>
@@ -290,6 +290,18 @@ function selDept(el,name,street,plz,extra){
   document.querySelectorAll('.card').forEach(function(c){c.className='card';});
   el.className='card on';
   dept={name:name,street:street,plz:plz,extra:extra};
+}
+function onNeueVersion(checked){
+  var datumEl=document.getElementById('datum');
+  if(checked){
+    var d=new Date();
+    datumEl.value=String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getFullYear()).slice(-2);
+    datumEl.readOnly=true;
+    datumEl.style.background='#f5f5f5';
+  }else{
+    datumEl.readOnly=false;
+    datumEl.style.background='';
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -593,21 +605,17 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer){
 
   var line1 = '<w:p><w:pPr><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
 
-  /* Line 2: address */
-  var addrParts = [dept.street];
+  /* Line 2: BWH Basel • dept • street • plz • www — single line */
+  var addrParts = ['Bürgerliches Waisenhaus Basel', dept.name, dept.street];
   if(dept.extra) addrParts.push(dept.extra);
   addrParts.push(dept.plz+' Basel');
   addrParts.push('www.waisehuus.ch');
-  var addrL1 = 'Bürgerliches Waisenhaus Basel  •  '+dept.name;
-  var addrL2 = addrParts.join('  •  ');
+  var addrLine = addrParts.join('  •  ');
 
   var line2 =
     '<w:p><w:pPr><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
     '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
-    '<w:t>'+esc(addrL1)+'</w:t></w:r>'+
-    '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr><w:br/></w:r>'+
-    '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
-    '<w:t>'+esc(addrL2)+'</w:t></w:r>'+
+    '<w:t>'+esc(addrLine)+'</w:t></w:r>'+
     '</w:p>';
 
   /* Right cell: WHBox style */
