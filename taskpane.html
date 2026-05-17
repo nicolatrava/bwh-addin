@@ -494,19 +494,20 @@ function hdrTable(lW, rW, totalW, leftCells, rightCells){
     '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
     '<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
     '<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>';
+  var noSpc = '<w:spacing w:before="0" w:after="0"/>';
   /* Row 1: left vMerge=restart, right cell row1 */
   var row1 =
-    '<w:tr>'+
+    '<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="284" w:hRule="exact"/></w:trPr>'+
       '<w:tc><w:tcPr><w:tcW w:w="'+lW+'" w:type="dxa"/><w:vMerge w:val="restart"/></w:tcPr>'+
-        '<w:p><w:pPr><w:rPr><w:b/><w:color w:val="808080"/><w:sz w:val="40"/><w:szCs w:val="40"/></w:rPr></w:pPr></w:p>'+
+        '<w:p><w:pPr>'+noSpc+'<w:rPr><w:b/><w:color w:val="808080"/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr></w:pPr></w:p>'+
       '</w:tc>'+
       '<w:tc><w:tcPr><w:tcW w:w="'+rW+'" w:type="dxa"/></w:tcPr>'+rightCells[0]+'</w:tc>'+
     '</w:tr>';
   /* Row 2: left vMerge (continuation), right cell row2 */
   var row2 =
-    '<w:tr>'+
+    '<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="284" w:hRule="exact"/></w:trPr>'+
       '<w:tc><w:tcPr><w:tcW w:w="'+lW+'" w:type="dxa"/><w:vMerge/></w:tcPr>'+
-        '<w:p><w:pPr><w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="40"/></w:rPr></w:pPr></w:p>'+
+        '<w:p><w:pPr>'+noSpc+'<w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="20"/></w:rPr></w:pPr></w:p>'+
       '</w:tc>'+
       '<w:tc><w:tcPr><w:tcW w:w="'+rW+'" w:type="dxa"/></w:tcPr>'+rightCells[1]+'</w:tc>'+
     '</w:tr>';
@@ -606,7 +607,7 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer){
   var line1 = '<w:p><w:pPr><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
 
   /* Line 2: BWH Basel • dept • street • plz • www — single line */
-  var addrParts = ['Bürgerliches Waisenhaus Basel', dept.name, dept.street];
+  var addrParts = ['Bürgerliches Waisenhaus Basel', dept.street];
   if(dept.extra) addrParts.push(dept.extra);
   addrParts.push(dept.plz+' Basel');
   addrParts.push('www.waisehuus.ch');
