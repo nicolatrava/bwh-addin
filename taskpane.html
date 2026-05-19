@@ -184,10 +184,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 
     <!-- Version, Kürzel, Datum (not for Brief) -->
     <div id="ver-fields">
-      <div class="field">
-        <label>Version</label>
-        <input type="text" id="version" placeholder="z.B. 1.0" value="1.0"/>
-      </div>
+      <label class="toggle-check">
+        <input type="checkbox" id="version-cb"/>
+        <span>Version = heutiges Datum</span>
+      </label>
       <div class="field">
         <label>K&uuml;rzel</label>
         <input type="text" id="kuerzel" placeholder="z.B. MM"/>
@@ -198,7 +198,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
       </div>
       <label class="toggle-check">
         <input type="checkbox" id="neue-version" onchange="onNeueVersion(this.checked)"/>
-        <span>Neue Version &rarr; Datum auf heute setzen</span>
+        <span>Datum auf heute setzen</span>
       </label>
     </div>
   </div>
@@ -583,7 +583,7 @@ function mkHdrPkg(isQuer, isExtern, pname, aort, deptName){
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer OOXML builder
    ═══════════════════════════════════════════════════════════════════════════ */
-function buildFtrBody(dept, version, kuerzel, datum, isQuer){
+function buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern){
   var n = _applyN;
   var ftrRid = 'rIdFtrBg'+n;
   var ftrDocprId = (n % 100) + 2;
@@ -604,9 +604,10 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer){
     (version ? txt('  •  Version: '+(version||''),'A74E57',16,false) : '') +
     (kuerzel ? txt('  •  Kürzel: '+(kuerzel||''),'A74E57',16,false) : '');
 
-  var line1 = '<w:p><w:pPr><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
+  var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
+  var line1 = '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
 
-  /* Line 2: BWH Basel • dept • street • plz • www — single line */
+  /* Line 2: BWH Basel • street • plz • www — single line */
   var addrParts = ['Bürgerliches Waisenhaus Basel', dept.street];
   if(dept.extra) addrParts.push(dept.extra);
   addrParts.push(dept.plz+' Basel');
@@ -614,13 +615,15 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer){
   var addrLine = addrParts.join('  •  ');
 
   var line2 =
-    '<w:p><w:pPr><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
+    '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
     '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
     '<w:t>'+esc(addrLine)+'</w:t></w:r>'+
     '</w:p>';
 
-  /* Right cell: WHBox style */
-  var rightCell = '<w:p><w:pPr><w:pStyle w:val="WHBox"/><w:jc w:val="right"/></w:pPr></w:p>';
+  /* Right cell: BG Basel logo only for extern */
+  var rightCell = isExtern
+    ? '<w:p><w:pPr>'+ftrSpc+'<w:pStyle w:val="WHBox"/><w:jc w:val="right"/></w:pPr></w:p>'
+    : '<w:p><w:pPr>'+ftrSpc+'</w:pPr></w:p>';
 
   var nb =
     '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
@@ -659,9 +662,9 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer){
   return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
 }
 
-function mkFtrPkg(dept, version, kuerzel, datum, isQuer){
+function mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern){
   var n = _applyN;
-  var result = buildFtrBody(dept, version, kuerzel, datum, isQuer);
+  var result = buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern);
   var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
   var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
 
@@ -698,6 +701,37 @@ function mkContentPkg(inhaltType, isQuer){
   return null;
 }
 
+/* Combines selected content types into a single OOXML package with page breaks */
+function mkCombinedContentPkg(selected, isQuer){
+  var n = _applyN;
+  var pgBrk = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+  var bodyParts = [];
+  var imgRels = [];
+  var imgBinaries = '';
+
+  if(selected.indexOf('titel') >= 0){
+    bodyParts.push(BODY_TITELBLATT);
+    var titelFn = 'titelblatt_'+n+'.jpeg';
+    imgRels.push({id:'rIdTitel', target:titelFn});
+    imgBinaries += PKG_IMG(titelFn, 'image/jpeg', TITELBLATT_JPEG_B64);
+  }
+  if(selected.indexOf('ivz') >= 0){
+    if(bodyParts.length) bodyParts.push(pgBrk);
+    bodyParts.push(BODY_IVZ);
+  }
+  if(selected.indexOf('muster') >= 0){
+    if(bodyParts.length) bodyParts.push(pgBrk);
+    bodyParts.push(isQuer ? BODY_INHALT_QUER : BODY_INHALT_HOCH);
+  }
+
+  return PKG_OPEN() +
+    PKG_ROOT_RELS() +
+    (imgRels.length ? PKG_IMG_RELS(imgRels) : '') +
+    imgBinaries +
+    PKG_DOCUMENT(bodyParts.join('')) +
+    PKG_CLOSE();
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Apply
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -722,15 +756,17 @@ function apply(){
   var isExtern = (typ === 'extern');
   var pname    = document.getElementById('prozessname').value.trim();
   var aort     = document.getElementById('ablageort').value.trim();
-  var version  = document.getElementById('version').value.trim();
   var kuerzel  = document.getElementById('kuerzel').value.trim();
   var datum    = document.getElementById('datum').value.trim();
+  var d0 = new Date();
+  var version = document.getElementById('version-cb').checked
+    ? String(d0.getDate()).padStart(2,'0')+'.'+String(d0.getMonth()+1).padStart(2,'0')+'.'+String(d0.getFullYear()).slice(-2)
+    : '';
 
   var hdrPkg = mkHdrPkg(isQuer, isExtern, pname, aort, dept.name);
-  var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer);
-  var selectedInhalt = typ !== 'brief' ? Object.keys(inhaltSet).filter(function(k){return inhaltSet[k];}) : [];
-  // Insert in reverse order so final doc order is: titel → ivz → muster
-  var contentPkgs = ['muster','ivz','titel'].filter(function(k){return selectedInhalt.indexOf(k)>=0;}).map(function(k){return mkContentPkg(k,isQuer);});
+  var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern);
+  var selectedInhalt = typ !== 'brief' ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
+  var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
 
   setTimeout(function(){
     Word.run(function(ctx){
@@ -740,10 +776,9 @@ function apply(){
         var s = sects.items[0];
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
-        // Insert content in reverse order so: Titelblatt → IVZ → Musterinhalt ends at top
-        contentPkgs.slice().reverse().forEach(function(pkg){
-          ctx.document.body.insertOoxml(pkg, Word.InsertLocation.start);
-        });
+        if(combinedPkg){
+          ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
+        }
         return ctx.sync();
       });
     }).then(function(){
