@@ -186,7 +186,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
     <div id="ver-fields">
       <label class="toggle-check">
         <input type="checkbox" id="version-cb"/>
-        <span>Version = heutiges Datum</span>
+        <span>Neue Version (Datum als Versionsnummer)</span>
       </label>
       <div class="field">
         <label>K&uuml;rzel</label>
@@ -538,11 +538,11 @@ function buildHdrBody(isQuer, isExtern, pname, aort, deptName, logoRid, logoDocp
   } else {
     rightRow1 =
       '<w:p><w:pPr><w:jc w:val="right"/></w:pPr>'+
-      '<w:r><w:rPr><w:b/><w:color w:val="A74E57"/></w:rPr>'+
+      '<w:r><w:rPr><w:b/><w:color w:val="A74E57"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr>'+
       '<w:t>'+esc(pname||'Prozessname')+'</w:t></w:r></w:p>';
     rightRow2 =
       '<w:p><w:pPr><w:jc w:val="right"/></w:pPr>'+
-      '<w:r><w:rPr><w:color w:val="A74E57"/></w:rPr>'+
+      '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr>'+
       '<w:t>'+esc(aort||'Ablageort')+'</w:t></w:r></w:p>';
   }
 
@@ -555,12 +555,13 @@ function buildHdrBody(isQuer, isExtern, pname, aort, deptName, logoRid, logoDocp
       '<w:r><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="144"/><w:szCs w:val="144"/></w:rPr>'+
         logoAnchor(logoRid, logoDocprId, isQuer)+
       '</w:r>'+
-      '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="18"/><w:szCs w:val="18"/></w:rPr>'+
+      '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr>'+
         '<w:t>'+esc(deptName)+'</w:t>'+
       '</w:r>'+
     '</w:p>';
 
-  return tbl + logoPara;
+  var spacer = '<w:p><w:pPr><w:spacing w:before="0" w:after="400"/></w:pPr></w:p>';
+  return tbl + logoPara + spacer;
 }
 
 function mkHdrPkg(isQuer, isExtern, pname, aort, deptName){
@@ -649,17 +650,18 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern){
       '</w:tr>'+
     '</w:tbl>';
 
-  /* Background bar anchor paragraph */
-  var bgPara =
-    '<w:p>'+
-      '<w:pPr><w:tabs><w:tab w:val="right" w:pos="9071"/></w:tabs>'+
-      '<w:rPr><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr>'+
-      '<w:r><w:rPr><w:noProof/></w:rPr>'+
-        ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+
-      '</w:r>'+
-    '</w:p>';
+  /* Background bar (contains BG Basel logo) — only for extern */
+  var bgPara = isExtern
+    ? '<w:p>'+
+        '<w:pPr><w:tabs><w:tab w:val="right" w:pos="9071"/></w:tabs>'+
+        '<w:rPr><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr>'+
+        '<w:r><w:rPr><w:noProof/></w:rPr>'+
+          ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+
+        '</w:r>'+
+      '</w:p>'
+    : '';
 
-  return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
+  return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId, hasImg: isExtern};
 }
 
 function mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern){
@@ -670,8 +672,8 @@ function mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern){
 
   return PKG_OPEN() +
     PKG_ROOT_RELS() +
-    PKG_IMG_RELS([{id: result.ftrRid, target: ftrFn}]) +
-    PKG_IMG(ftrFn, 'image/x-emf', ftrB64) +
+    (isExtern ? PKG_IMG_RELS([{id: result.ftrRid, target: ftrFn}]) : '') +
+    (isExtern ? PKG_IMG(ftrFn, 'image/x-emf', ftrB64) : '') +
     PKG_DOCUMENT(result.body) +
     PKG_CLOSE();
 }
