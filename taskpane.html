@@ -601,7 +601,7 @@ function mkHdrPkg(isQuer, isExtern, pname, aort, deptName){
   var logoRid  = 'rIdLogo'+n;
   var logoDocprId = (n % 100) + 1;
   var logoFn   = isQuer ? 'logo_quer_'+n+'.emf' : 'logo_hoch_'+n+'.emf';
-  var logoB64  = isQuer ? LOGO_EMF_QUER_B64 : LOGO_EMF_B64;
+  var logoB64  = LOGO_EMF_B64;
 
   var body = buildHdrBody(isQuer, isExtern, pname, aort, deptName, logoRid, logoDocprId);
 
@@ -812,6 +812,17 @@ function apply(){
         var s = sects.items[0];
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
+        if(isQuer){
+          /* Insert a paragraph with sectPr at End to switch page to A4 landscape */
+          var qSectBody =
+            '<w:p><w:pPr><w:sectPr>'+
+            '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>'+
+            '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>'+
+            '</w:sectPr></w:pPr></w:p>';
+          ctx.document.body.insertOoxml(
+            PKG_OPEN()+PKG_ROOT_RELS()+PKG_DOCUMENT(qSectBody)+PKG_CLOSE(),
+            Word.InsertLocation.end);
+        }
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
         }
