@@ -122,6 +122,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
   <div class="step" style="margin-top:14px">
     <div class="step-title"><span class="sn">4</span>Abteilung w&auml;hlen</div>
     <div class="cards">
+      <div class="card" onclick="selDept(this,'Allgemeine Vorlage','Theodorskirchplatz 7','4058','')">
+        <span class="ck">&#10003;</span>
+        <div class="card-name">Allgemeine Vorlage</div>
+        <div class="card-addr">Theodorskirchplatz 7 &middot; 4058 Basel</div>
+      </div>
       <div class="card" onclick="selDept(this,'Arbeitstraining','Theodorskirchplatz 7','4058','')">
         <span class="ck">&#10003;</span>
         <div class="card-name">Arbeitstraining</div>
@@ -558,13 +563,13 @@ function hdrTable(lW, rW, totalW, leftCells, rightCells){
     '</w:tbl>';
 }
 
-function buildHdrBody(isQuer, isExtern, pname, aort, deptName, logoRid, logoDocprId){
+function buildHdrBody(isQuer, isExtern, isBrief, pname, aort, deptName, logoRid, logoDocprId){
   var lW = isQuer ? 2410 : 3261;
   var rW = isQuer ? 12191 : 6370;
   var totalW = isQuer ? 14601 : 9631;
 
   var rightRow1, rightRow2;
-  if(isExtern){
+  if(isExtern || isBrief){
     rightRow1 = '<w:p><w:pPr><w:jc w:val="right"/></w:pPr></w:p>';
     rightRow2 = '<w:p><w:pPr><w:jc w:val="right"/></w:pPr></w:p>';
   } else {
@@ -596,14 +601,14 @@ function buildHdrBody(isQuer, isExtern, pname, aort, deptName, logoRid, logoDocp
   return tbl + logoPara + spacer;
 }
 
-function mkHdrPkg(isQuer, isExtern, pname, aort, deptName){
+function mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, deptName){
   var n = _applyN;
   var logoRid  = 'rIdLogo'+n;
   var logoDocprId = (n % 100) + 1;
   var logoFn   = isQuer ? 'logo_quer_'+n+'.emf' : 'logo_hoch_'+n+'.emf';
   var logoB64  = LOGO_EMF_B64;
 
-  var body = buildHdrBody(isQuer, isExtern, pname, aort, deptName, logoRid, logoDocprId);
+  var body = buildHdrBody(isQuer, isExtern, isBrief, pname, aort, deptName, logoRid, logoDocprId);
 
   return PKG_OPEN() +
     PKG_ROOT_RELS() +
@@ -799,7 +804,8 @@ function apply(){
     ? String(d0.getDate()).padStart(2,'0')+'.'+String(d0.getMonth()+1).padStart(2,'0')+'.'+String(d0.getFullYear()).slice(-2)
     : '';
 
-  var hdrPkg = mkHdrPkg(isQuer, isExtern, pname, aort, dept.name);
+  var isBrief = (typ === 'brief');
+  var hdrPkg = mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, dept.name);
   var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern);
   var selectedInhalt = typ !== 'brief' ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
@@ -813,14 +819,15 @@ function apply(){
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
         if(isQuer){
-          /* Insert a paragraph with sectPr at End to switch page to A4 landscape */
-          var qSectBody =
-            '<w:p><w:pPr><w:sectPr>'+
+          /* Replace body to switch page to A4 landscape; sectPr as last body child */
+          var qSect =
+            '<w:sectPr>'+
             '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>'+
             '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>'+
-            '</w:sectPr></w:pPr></w:p>';
+            '</w:sectPr>';
+          /* Insert a minimal body-level sectPr at End — Word merges it into the document section */
           ctx.document.body.insertOoxml(
-            PKG_OPEN()+PKG_ROOT_RELS()+PKG_DOCUMENT(qSectBody)+PKG_CLOSE(),
+            PKG_OPEN()+PKG_ROOT_RELS()+PKG_DOCUMENT('<w:p/>'+qSect)+PKG_CLOSE(),
             Word.InsertLocation.end);
         }
         if(combinedPkg){
