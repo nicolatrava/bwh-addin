@@ -810,9 +810,13 @@ function apply(){
   var selectedInhalt = typ !== 'brief' ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
 
-  function setLandscape(pkgXml){
-    var pgSz = '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>';
-    var pgMar = '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>';
+  function setPageOrientation(pkgXml, isQuer){
+    var pgSz = isQuer
+      ? '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>'
+      : '<w:pgSz w:w="11906" w:h="16838"/>';
+    var pgMar = isQuer
+      ? '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>'
+      : '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>';
     var result = pkgXml
       .replace(/<w:pgSz\b[^>]*\/>/g, '')
       .replace(/<w:pgMar\b[^>]*\/>/g, '');
@@ -828,14 +832,13 @@ function apply(){
     Word.run(function(ctx){
       var sects = ctx.document.sections;
       sects.load('items');
-      var bodyOoxmlResult = isQuer ? ctx.document.body.getOoxml() : null;
+      var bodyOoxmlResult = ctx.document.body.getOoxml();
       return ctx.sync().then(function(){
         var s = sects.items[0];
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
-        if(isQuer && bodyOoxmlResult){
-          ctx.document.body.insertOoxml(setLandscape(bodyOoxmlResult.value), 'Replace');
-        }
+        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer), 'Replace');
+
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
         }
