@@ -810,25 +810,31 @@ function apply(){
   var selectedInhalt = typ !== 'brief' ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
 
+  function setLandscape(pkgXml){
+    var pgSz = '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>';
+    var pgMar = '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>';
+    var result = pkgXml
+      .replace(/<w:pgSz\b[^>]*\/>/g, '')
+      .replace(/<w:pgMar\b[^>]*\/>/g, '');
+    if(result.indexOf('<w:sectPr') !== -1){
+      result = result.replace(/(<w:sectPr(?:\s[^>]*)?>)/, '$1'+pgSz+pgMar);
+    } else {
+      result = result.replace('</w:body>', '<w:sectPr>'+pgSz+pgMar+'</w:sectPr></w:body>');
+    }
+    return result;
+  }
+
   setTimeout(function(){
     Word.run(function(ctx){
       var sects = ctx.document.sections;
       sects.load('items');
+      var bodyOoxmlResult = isQuer ? ctx.document.body.getOoxml() : null;
       return ctx.sync().then(function(){
         var s = sects.items[0];
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
-        if(isQuer){
-          /* Replace body to switch page to A4 landscape; sectPr as last body child */
-          var qSect =
-            '<w:sectPr>'+
-            '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>'+
-            '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>'+
-            '</w:sectPr>';
-          /* Insert a minimal body-level sectPr at End — Word merges it into the document section */
-          ctx.document.body.insertOoxml(
-            PKG_OPEN()+PKG_ROOT_RELS()+PKG_DOCUMENT('<w:p/>'+qSect)+PKG_CLOSE(),
-            Word.InsertLocation.end);
+        if(isQuer && bodyOoxmlResult){
+          ctx.document.body.insertOoxml(setLandscape(bodyOoxmlResult.value), 'Replace');
         }
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
