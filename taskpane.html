@@ -267,8 +267,14 @@ function setFmt(v){
   ['hoch','quer'].forEach(function(k){
     document.getElementById('btn-'+k).className='tbtn'+(k===v?' on':'');
   });
-  // Titelblatt only available for Hoch
-  if(v==='quer'){inhaltSet['titel']=false; document.getElementById('btn-titel').className='tbtn'; document.getElementById('btn-titel').disabled=true;} else {document.getElementById('btn-titel').disabled=false;}
+  // Titelblatt + Musterinhalt only available for Hoch
+  if(v==='quer'){
+    inhaltSet['titel']=false; document.getElementById('btn-titel').className='tbtn'; document.getElementById('btn-titel').disabled=true;
+    inhaltSet['muster']=false; document.getElementById('btn-muster').className='tbtn'; document.getElementById('btn-muster').disabled=true;
+  } else {
+    document.getElementById('btn-titel').disabled=false;
+    document.getElementById('btn-muster').disabled=false;
+  }
   updateInhaltHints();
 }
 
@@ -289,6 +295,7 @@ function toggleInhalt(v){
 
 function updateInhaltHints(){
   document.getElementById('btn-titel').disabled=(fmt==='quer');
+  document.getElementById('btn-muster').disabled=(fmt==='quer');
 }
 
 function selDept(el,name,street,plz,extra){
@@ -639,7 +646,7 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern){
     fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16) +
     txt('  •  ','A74E57',16,false) +
     txt(datum||'','A74E57',16,false) +
-    (version ? txt('  •  Version: '+(version||''),'A74E57',16,false) : '') +
+    txt('  •  Version: '+(version||''),'A74E57',16,false) +
     (kuerzel ? txt('  •  Kürzel: '+(kuerzel||''),'A74E57',16,false) : '');
 
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
