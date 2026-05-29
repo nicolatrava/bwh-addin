@@ -15,10 +15,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 
 /* ── header bar ── */
 .top{background:var(--red);padding:14px 18px 12px}
-.top-logo{display:flex;align-items:center;gap:9px;margin-bottom:3px}
-.arch{width:24px;height:24px;border:2.5px solid rgba(255,255,255,.65);border-bottom:none;border-radius:50% 50% 0 0}
-.top h1{color:white;font-size:14px;font-weight:700;letter-spacing:.3px}
-.top p{color:rgba(255,255,255,.7);font-size:11px}
+.top-logo{display:flex;align-items:center;gap:10px;margin-bottom:0}
+.top-logo img{height:32px;width:auto;filter:brightness(0) invert(1)}
+.top h1{color:white;font-size:13px;font-weight:600;letter-spacing:.2px}
 
 /* ── scroll area & sticky footer ── */
 .scroll{padding:0 0 100px}
@@ -79,8 +78,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <body>
 
 <div class="top">
-  <div class="top-logo"><div class="arch"></div><h1>waisehuus</h1></div>
-  <p>BWH Dokumentenvorlagen</p>
+  <div class="top-logo">
+    <img src="logo-dok-klein.png" alt="waisehuus"/>
+    <h1>BWH Dokumentenvorlagen</h1>
+  </div>
 </div>
 
 <div class="scroll">
