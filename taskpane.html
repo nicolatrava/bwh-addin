@@ -253,9 +253,16 @@ function setTyp(v){
   var fmtHide=(v==='brief');
   document.getElementById('fmt-step').className='step'+(fmtHide?' hidden':'');
   document.getElementById('fmt-sep').className='sep'+(fmtHide?' hidden':'');
-  // Inhalt step: hide for Brief
-  document.getElementById('inh-step').className='step'+(fmtHide?' hidden':'');
-  document.getElementById('inh-sep').className='sep'+(fmtHide?' hidden':'');
+  // Inhalt step: always visible; for Brief hide IVZ+Titelblatt, reset them
+  document.getElementById('inh-step').className='step';
+  document.getElementById('inh-sep').className='sep';
+  var briefHide = (v==='brief');
+  ['ivz','titel'].forEach(function(k){
+    var btn = document.getElementById('btn-'+k);
+    btn.className = 'tbtn';
+    btn.style.display = briefHide ? 'none' : '';
+    if(briefHide){ inhaltSet[k]=false; }
+  });
   // Prozessname fields: only Intern
   document.getElementById('pname-fields').className=(v==='intern'?'':'hidden');
   // Metadaten step: hide entirely for Brief
@@ -817,9 +824,9 @@ function apply(){
   var isBrief = (typ === 'brief');
   var hdrPkg = mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, dept.name);
   var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern);
-  var selectedInhalt = typ !== 'brief' ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
+  var selectedInhalt = !isBrief ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
-  var briefPkg = isBrief ? (PKG_OPEN()+PKG_ROOT_RELS()+PKG_CONTENT_RELS([])+PKG_STYLES()+PKG_NUMBERING()+PKG_DOCUMENT(BODY_BRIEF)+PKG_CLOSE()) : null;
+  var briefPkg = (isBrief && inhaltSet['muster']) ? (PKG_OPEN()+PKG_ROOT_RELS()+PKG_CONTENT_RELS([])+PKG_STYLES()+PKG_NUMBERING()+PKG_DOCUMENT(BODY_BRIEF)+PKG_CLOSE()) : null;
 
   function setPageOrientation(pkgXml, isQuer){
     var pgSz = isQuer
