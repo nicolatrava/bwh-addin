@@ -264,6 +264,12 @@ function setTyp(v){
     btn.style.display = briefHide ? 'none' : '';
     if(briefHide){ inhaltSet[k]=false; }
   });
+  // Musterinhalt always visible; update label and ensure enabled
+  var musterBtn = document.getElementById('btn-muster');
+  musterBtn.style.display = '';
+  musterBtn.disabled = false;
+  musterBtn.textContent = briefHide ? 'Brief-Musterinhalt' : 'Musterinhalt';
+  if(briefHide){ inhaltSet['muster']=false; musterBtn.className='tbtn'; }
   // Prozessname fields: only Intern
   document.getElementById('pname-fields').className=(v==='intern'?'':'hidden');
   // Metadaten step: hide entirely for Brief
