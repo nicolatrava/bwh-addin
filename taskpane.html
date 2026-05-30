@@ -837,7 +837,15 @@ function apply(){
   var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern);
   var selectedInhalt = !isBrief ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
-  var briefPkg = (isBrief && inhaltSet['muster']) ? (PKG_OPEN()+PKG_ROOT_RELS()+PKG_CONTENT_RELS([])+PKG_STYLES()+PKG_NUMBERING()+PKG_DOCUMENT(BODY_BRIEF)+PKG_CLOSE()) : null;
+  var briefPkg = null;
+  if(isBrief && inhaltSet['muster']){
+    var briefBody = BODY_BRIEF;
+    var briefDocprCounter = 1;
+    briefBody = briefBody.replace(/(<(?:wp:docPr|wp14:docId)[^>]*\bid=")[^"]+"/g, function(m, pre){
+      return pre + ((_applyN * 100) + briefDocprCounter++) + '"';
+    });
+    briefPkg = PKG_OPEN()+PKG_ROOT_RELS()+PKG_CONTENT_RELS([])+PKG_STYLES()+PKG_NUMBERING()+PKG_DOCUMENT(briefBody)+PKG_CLOSE();
+  }
 
   function setPageOrientation(pkgXml, isQuer){
     var pgSz = isQuer
