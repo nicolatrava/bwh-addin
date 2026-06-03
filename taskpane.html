@@ -822,13 +822,11 @@ function apply(){
   var kuerzel  = document.getElementById('kuerzel').value.trim();
   var datum    = document.getElementById('datum').value.trim();
   var d0 = new Date();
-  var version = document.getElementById('version-cb').checked
-    ? String(d0.getDate()).padStart(2,'0')+'.'+String(d0.getMonth()+1).padStart(2,'0')+'.'+String(d0.getFullYear()).slice(-2)
-    : '';
+  var newVersion = document.getElementById('version-cb').checked;
+  var newVersionDate = String(d0.getDate()).padStart(2,'0')+'.'+String(d0.getMonth()+1).padStart(2,'0')+'.'+String(d0.getFullYear()).slice(-2);
 
   var isBrief = (typ === 'brief');
   var hdrPkg = mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, dept.name);
-  var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern);
   var selectedInhalt = !isBrief ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
   var briefPkg = null;
@@ -864,8 +862,22 @@ function apply(){
       var sects = ctx.document.sections;
       sects.load('items');
       var bodyOoxmlResult = ctx.document.body.getOoxml();
+      var oldFtrOoxml = null;
       return ctx.sync().then(function(){
         var s = sects.items[0];
+        oldFtrOoxml = s.getFooter('primary').getOoxml();
+        return ctx.sync();
+      }).then(function(){
+        var s = sects.items[0];
+        /* Determine version: new = today; otherwise keep existing footer date */
+        var version = '';
+        if(newVersion){
+          version = newVersionDate;
+        } else if(oldFtrOoxml && oldFtrOoxml.value){
+          var m = oldFtrOoxml.value.replace(/<[^>]+>/g,'').match(/Version\s+(\d{2}\.\d{2}\.\d{2})/);
+          if(m){ version = m[1]; }
+        }
+        var ftrPkg = mkFtrPkg(dept, version, kuerzel, datum, isQuer, isExtern);
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
         ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer), 'Replace');
