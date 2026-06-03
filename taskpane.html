@@ -891,6 +891,12 @@ function apply(){
         return ctx.sync();
       });
     }).then(function(){
+      /* Save current state to document settings for next open */
+      try {
+        var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, datum:datum});
+        Office.context.document.settings.set('bwhAddinState', state);
+        Office.context.document.settings.saveAsync(function(){});
+      } catch(e){}
       var lbl = {brief:'Brief', intern:'Int. Dok.', extern:'Ext. Dok.'};
       var fmtLbl = (fmt==='quer') ? ' A4 Quer' : ' A4 Hoch';
       var inhLbl = selectedInhalt.length ? ' • '+selectedInhalt.join('+') : '';
@@ -922,6 +928,37 @@ Office.onReady(function(info){
   var mm = String(d.getMonth()+1).padStart(2,'0');
   var yy = String(d.getFullYear()).slice(-2);
   document.getElementById('datum').value = dd+'.'+mm+'.'+yy;
+
+  /* Restore form values saved in document settings from last apply */
+  try {
+    Office.context.document.settings.refreshAsync(function(){
+      var saved = Office.context.document.settings.get('bwhAddinState');
+      if(saved){
+        try { saved = JSON.parse(saved); } catch(e){ saved = null; }
+      }
+      if(saved){
+        if(saved.typ)  setTyp(saved.typ);
+        if(saved.fmt)  setFmt(saved.fmt);
+        if(saved.dept){
+          /* Find and click the matching card */
+          var cards = document.querySelectorAll('.card');
+          for(var i=0;i<cards.length;i++){
+            if(cards[i].querySelector('.card-name') && cards[i].querySelector('.card-name').textContent===saved.dept){
+              cards[i].className='card on';
+              var parts=cards[i].getAttribute('onclick').match(/'([^']*)'/g)||[];
+              if(parts.length>=3){
+                dept={name:(parts[0]||'').replace(/'/g,''), street:(parts[1]||'').replace(/'/g,''), plz:(parts[2]||'').replace(/'/g,''), extra:(parts[3]||'').replace(/'/g,'')};
+              }
+              break;
+            }
+          }
+        }
+        if(saved.pname !== undefined) document.getElementById('prozessname').value = saved.pname;
+        if(saved.aort  !== undefined) document.getElementById('ablageort').value   = saved.aort;
+        if(saved.datum !== undefined && saved.datum) document.getElementById('datum').value = saved.datum;
+      }
+    });
+  } catch(e){}
 });
 </script>
 </body>
