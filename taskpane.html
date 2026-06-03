@@ -609,19 +609,19 @@ function buildHdrBody(isQuer, isExtern, isBrief, pname, aort, deptName, logoRid,
   var tbl = hdrTable(lW, rW, totalW, null, [rightRow1, rightRow2]);
 
   /* Logo paragraph with floating anchor + Abteilung text */
+  var deptText = (deptName === 'Allgemeine Vorlage') ? '' : deptName;
   var logoPara =
     '<w:p>'+
-      '<w:pPr><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="144"/><w:szCs w:val="144"/></w:rPr></w:pPr>'+
+      '<w:pPr><w:spacing w:before="0" w:after="400"/><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="144"/><w:szCs w:val="144"/></w:rPr></w:pPr>'+
       '<w:r><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="144"/><w:szCs w:val="144"/></w:rPr>'+
         logoAnchor(logoRid, logoDocprId, isQuer)+
       '</w:r>'+
       '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr>'+
-        '<w:t>'+esc(deptName)+'</w:t>'+
+        '<w:t>'+esc(deptText)+'</w:t>'+
       '</w:r>'+
     '</w:p>';
 
-  var spacer = '<w:p><w:pPr><w:spacing w:before="0" w:after="400"/></w:pPr></w:p>';
-  return tbl + logoPara + spacer;
+  return tbl + logoPara;
 }
 
 function mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, deptName){
@@ -653,7 +653,7 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern){
   var rW = isQuer ? 1985  : 2139;
   var totalW = isQuer ? 14601 : 9652;
 
-  /* Line 1: page • numpages • filename • datum • Version: x • Kürzel: y */
+  /* Line 1: page • numpages • filename • datum • Version x */
   var meta =
     fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
     txt(' • ','A74E57',16,false) +
@@ -662,8 +662,7 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern){
     fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16) +
     txt('  •  ','A74E57',16,false) +
     txt(datum||'','A74E57',16,false) +
-    txt('  •  Version: '+(version||''),'A74E57',16,false) +
-    (kuerzel ? txt('  •  Kürzel: '+(kuerzel||''),'A74E57',16,false) : '');
+    txt('  •  Version '+(version||''),'A74E57',16,false);
 
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
   var line1 = '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
