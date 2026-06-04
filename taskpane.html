@@ -929,19 +929,20 @@ function apply(){
       }).then(function(){
         /* Save document so FILENAME and other fields update automatically */
         return ctx.document.save();
+      }).then(function(){
+        /* Save current state to document settings for next open */
+        try {
+          var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, datum:datum, briefName:briefName, briefFunktion:briefFunktion, briefTelefon:briefTelefon, briefEmail:briefEmail});
+          Office.context.document.settings.set('bwhAddinState', state);
+          Office.context.document.settings.saveAsync(function(){});
+        } catch(e){}
+        var lbl = {brief:'Brief', intern:'Int. Dok.', extern:'Ext. Dok.'};
+        var fmtLbl = (fmt==='quer') ? ' A4 Quer' : ' A4 Hoch';
+        var inhLbl = selectedInhalt.length ? ' • '+selectedInhalt.join('+') : '';
+        showStatus('✓ '+dept.name+' | '+lbl[typ]+fmtLbl+inhLbl, 'ok');
+        btn.disabled = false;
+        btn.textContent = 'Auf Dokument anwenden';
       });
-      /* Save current state to document settings for next open */
-      try {
-        var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, datum:datum, briefName:briefName, briefFunktion:briefFunktion, briefTelefon:briefTelefon, briefEmail:briefEmail});
-        Office.context.document.settings.set('bwhAddinState', state);
-        Office.context.document.settings.saveAsync(function(){});
-      } catch(e){}
-      var lbl = {brief:'Brief', intern:'Int. Dok.', extern:'Ext. Dok.'};
-      var fmtLbl = (fmt==='quer') ? ' A4 Quer' : ' A4 Hoch';
-      var inhLbl = selectedInhalt.length ? ' • '+selectedInhalt.join('+') : '';
-      showStatus('✓ '+dept.name+' | '+lbl[typ]+fmtLbl+inhLbl, 'ok');
-      btn.disabled = false;
-      btn.textContent = 'Auf Dokument anwenden';
     }).catch(function(e){
       showStatus('Fehler: '+(e.message||String(e)), 'err');
       btn.disabled = false;
