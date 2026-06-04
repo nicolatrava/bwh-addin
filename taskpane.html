@@ -14,10 +14,11 @@
 body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px;color:#2d2d2d}
 
 /* ── header bar ── */
-.top{background:var(--red);padding:14px 18px 12px}
-.top-logo{display:flex;align-items:center;gap:10px;margin-bottom:0}
-.top-logo svg{height:34px;width:auto}
+.top{background:var(--red);padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between}
 .top h1{color:white;font-size:13px;font-weight:600;letter-spacing:.2px}
+.top-help{color:rgba(255,255,255,.85);font-size:11px;font-weight:500;text-decoration:none;
+  border:1px solid rgba(255,255,255,.45);border-radius:4px;padding:3px 8px;white-space:nowrap}
+.top-help:hover{background:rgba(255,255,255,.15)}
 
 /* ── scroll area & sticky footer ── */
 .scroll{padding:0 0 100px}
@@ -78,9 +79,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <body>
 
 <div class="top">
-  <div class="top-logo">
-    <h1>BWH Dokumentenvorlagen</h1>
-  </div>
+  <h1>BWH Dokumentenvorlagen</h1>
+  <a class="top-help" href="https://nicolatrava.github.io/bwh-addin/" target="_blank">Anleitung</a>
 </div>
 
 <div class="scroll">
@@ -683,7 +683,8 @@ function buildFtrBody(dept, version, kuerzel, datum, isQuer, isExtern){
     fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16) +
     txt('  •  ','A74E57',16,false) +
     txt(datum||'','A74E57',16,false) +
-    txt('  •  Version '+(version||''),'A74E57',16,false);
+    txt('  •  Version '+(version||''),'A74E57',16,false) +
+    (kuerzel ? txt('  •  '+kuerzel,'A74E57',16,false) : '');
 
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
   var line1 = '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';

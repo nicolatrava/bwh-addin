@@ -69,7 +69,7 @@
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="BWH Vorlagen"/>
-        <bt:String id="TaskpaneLabel" DefaultValue="Dokumentenvorlagen"/>
+        <bt:String id="TaskpaneLabel" DefaultValue="BWH Dokumentenvorlagen"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="TaskpaneDesc" DefaultValue="Abteilungsadresse in Fusszeile setzen"/>
