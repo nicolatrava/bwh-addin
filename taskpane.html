@@ -206,6 +206,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
         <span>Datum auf heute setzen</span>
       </label>
     </div>
+
+    <!-- Brief-specific fields (only for Brief) -->
+    <div id="brief-fields" class="hidden">
+      <div class="field">
+        <label>Vorname Name</label>
+        <input type="text" id="brief-name" placeholder="z.B. Maria Muster"/>
+      </div>
+      <div class="field">
+        <label>Funktion</label>
+        <input type="text" id="brief-funktion" placeholder="z.B. Bereichsleiterin"/>
+      </div>
+      <div class="field">
+        <label>Telefon</label>
+        <input type="text" id="brief-telefon" placeholder="z.B. 061 123 45 67"/>
+      </div>
+      <div class="field">
+        <label>E-Mail</label>
+        <input type="text" id="brief-email" placeholder="z.B. m.muster@waisehuus.ch"/>
+      </div>
+    </div>
   </div>
   <div class="sep"></div>
 
@@ -271,10 +291,11 @@ function setTyp(v){
   if(briefHide){ inhaltSet['muster']=false; musterBtn.className='tbtn'; }
   // Prozessname fields: only Intern
   document.getElementById('pname-fields').className=(v==='intern'?'':'hidden');
-  // Metadaten step: hide entirely for Brief
-  document.getElementById('meta-step').className='step'+(fmtHide?' hidden':'');
-  // Version/Kürzel/Datum: not for Brief
+  // Metadaten step: always visible
+  document.getElementById('meta-step').className='step';
+  // Version/Kürzel/Datum: not for Brief; Brief-fields only for Brief
   document.getElementById('ver-fields').className=(v==='brief'?'hidden':'');
+  document.getElementById('brief-fields').className=(v==='brief'?'':'hidden');
   if(v==='brief'){fmt='hoch';}
 }
 
@@ -826,12 +847,24 @@ function apply(){
   var newVersionDate = String(d0.getDate()).padStart(2,'0')+'.'+String(d0.getMonth()+1).padStart(2,'0')+'.'+String(d0.getFullYear()).slice(-2);
 
   var isBrief = (typ === 'brief');
+  var briefName     = document.getElementById('brief-name').value.trim();
+  var briefFunktion = document.getElementById('brief-funktion').value.trim();
+  var briefTelefon  = document.getElementById('brief-telefon').value.trim();
+  var briefEmail    = document.getElementById('brief-email').value.trim();
   var hdrPkg = mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, dept.name);
   var selectedInhalt = !isBrief ? ['titel','ivz','muster'].filter(function(k){return inhaltSet[k];}) : [];
   var combinedPkg = selectedInhalt.length ? mkCombinedContentPkg(selectedInhalt, isQuer) : null;
   var briefPkg = null;
   if(isBrief && inhaltSet['muster']){
     var briefBody = BODY_BRIEF;
+    /* Replace placeholders */
+    briefBody = briefBody.replace(/\[Abteilung\]/g, esc(dept.name));
+    briefBody = briefBody.replace(/\[Vorname\]/g, esc(briefName));
+    briefBody = briefBody.replace(/\[Nachname\]/g, '');
+    briefBody = briefBody.replace(/\[Funktion\]/g, esc(briefFunktion));
+    briefBody = briefBody.replace(/\[Telefon\]/g, esc(briefTelefon));
+    briefBody = briefBody.replace(/\[E-Mail\]/g, esc(briefEmail));
+    /* Fix docPr IDs */
     var briefDocprCounter = 1;
     briefBody = briefBody.replace(/(<(?:wp:docPr|wp14:docId)[^>]*\bid=")[^"]+"/g, function(m, pre){
       return pre + ((_applyN * 100) + briefDocprCounter++) + '"';
@@ -893,7 +926,7 @@ function apply(){
     }).then(function(){
       /* Save current state to document settings for next open */
       try {
-        var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, datum:datum});
+        var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, datum:datum, briefName:briefName, briefFunktion:briefFunktion, briefTelefon:briefTelefon, briefEmail:briefEmail});
         Office.context.document.settings.set('bwhAddinState', state);
         Office.context.document.settings.saveAsync(function(){});
       } catch(e){}
@@ -953,9 +986,13 @@ Office.onReady(function(info){
             }
           }
         }
-        if(saved.pname !== undefined) document.getElementById('prozessname').value = saved.pname;
-        if(saved.aort  !== undefined) document.getElementById('ablageort').value   = saved.aort;
-        if(saved.datum !== undefined && saved.datum) document.getElementById('datum').value = saved.datum;
+        if(saved.pname        !== undefined) document.getElementById('prozessname').value    = saved.pname;
+        if(saved.aort         !== undefined) document.getElementById('ablageort').value      = saved.aort;
+        if(saved.datum        !== undefined && saved.datum) document.getElementById('datum').value = saved.datum;
+        if(saved.briefName    !== undefined) document.getElementById('brief-name').value     = saved.briefName;
+        if(saved.briefFunktion!== undefined) document.getElementById('brief-funktion').value = saved.briefFunktion;
+        if(saved.briefTelefon !== undefined) document.getElementById('brief-telefon').value  = saved.briefTelefon;
+        if(saved.briefEmail   !== undefined) document.getElementById('brief-email').value    = saved.briefEmail;
       }
     });
   } catch(e){}
