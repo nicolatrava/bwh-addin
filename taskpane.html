@@ -192,12 +192,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
       </div>
     </div>
 
-    <!-- Version, Kürzel, Datum (not for Brief) -->
+    <!-- Datum (not for Brief) -->
     <div id="ver-fields">
-      <div class="field">
-        <label>K&uuml;rzel</label>
-        <input type="text" id="kuerzel" placeholder="z.B. MM"/>
-      </div>
       <div class="field">
         <label>Datum</label>
         <input type="text" id="datum" placeholder="TT.MM.JJ"/>
@@ -778,7 +774,20 @@ function mkBriefFtrPkg(){
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer OOXML builder
    ═══════════════════════════════════════════════════════════════════════════ */
-function buildFtrBody(dept, kuerzel, datum, isQuer, isExtern){
+function buildMetaLine(datum){
+  var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
+  var meta =
+    fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
+    txt(' • ','A74E57',16,false) +
+    fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
+    txt('  •  ','A74E57',16,false) +
+    fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16) +
+    txt('  •  ','A74E57',16,false) +
+    txt(datum||'','A74E57',16,false);
+  return '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
+}
+
+function buildFtrBody(dept, datum, isQuer, isExtern){
   var n = _applyN;
   var ftrRid = 'rIdFtrBg'+n;
   var ftrDocprId = (n % 100) + 2;
@@ -787,33 +796,23 @@ function buildFtrBody(dept, kuerzel, datum, isQuer, isExtern){
   var rW = isQuer ? 1985  : 2139;
   var totalW = isQuer ? 14601 : 9652;
 
-  /* Line 1: page • numpages • filename • datum • kuerzel */
-  var meta =
-    fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
-    txt(' • ','A74E57',16,false) +
-    fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
-    txt('  •  ','A74E57',16,false) +
-    fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16) +
-    txt('  •  ','A74E57',16,false) +
-    txt(datum||'','A74E57',16,false) +
-    (kuerzel ? txt('  •  '+kuerzel,'A74E57',16,false) : '');
-
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
-  var line1 = '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
+  var line1 = buildMetaLine(datum);
 
-  /* Line 2: BWH Basel • [dept] • street • plz • www */
-  var addrParts = ['Bürgerliches Waisenhaus Basel'];
-  if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
-  addrParts.push(dept.street);
-  addrParts.push(dept.plz+' Basel');
-  addrParts.push('www.waisehuus.ch');
-  var addrLine = addrParts.join('  •  ');
-
-  var line2 =
-    '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
-    '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
-    '<w:t>'+esc(addrLine)+'</w:t></w:r>'+
-    '</w:p>';
+  /* Line 2: address — only for external documents */
+  var line2 = '';
+  if(isExtern){
+    var addrParts = ['Bürgerliches Waisenhaus Basel'];
+    if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
+    addrParts.push(dept.street);
+    addrParts.push(dept.plz+' Basel');
+    addrParts.push('www.waisehuus.ch');
+    line2 =
+      '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
+      '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
+      '<w:t>'+esc(addrParts.join('  •  '))+'</w:t></w:r>'+
+      '</w:p>';
+  }
 
   /* Right cell: BG Basel logo only for extern */
   var rightCell = isExtern
@@ -855,21 +854,36 @@ function buildFtrBody(dept, kuerzel, datum, isQuer, isExtern){
       '</w:p>'
     : '';
 
-  return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId, hasImg: isExtern};
+  return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
 }
 
-function mkFtrPkg(dept, kuerzel, datum, isQuer, isExtern){
+/* Returns {primary, firstPage}.
+   - Internal docs: primary = minimal (meta only), no firstPage needed.
+   - External docs: firstPage = full (address+logo+meta), primary = minimal.
+   Caller sets s.getFooter('firstPage') only when isExtern=true. */
+function mkFtrPkg(dept, datum, isQuer, isExtern){
   var n = _applyN;
-  var result = buildFtrBody(dept, kuerzel, datum, isQuer, isExtern);
   var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
   var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
 
-  return PKG_OPEN() +
+  /* Minimal footer: only page • numpages • filename • datum */
+  var minimalBody = buildMetaLine(datum);
+  var primaryPkg = PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(minimalBody) + PKG_CLOSE();
+
+  if(!isExtern){
+    return {primary: primaryPkg, firstPage: null};
+  }
+
+  /* Full footer for external page 1 (with address + BG logo) */
+  var full = buildFtrBody(dept, datum, isQuer, true);
+  var firstPagePkg = PKG_OPEN() +
     PKG_ROOT_RELS() +
-    (isExtern ? PKG_IMG_RELS([{id: result.ftrRid, target: ftrFn}]) : '') +
-    (isExtern ? PKG_IMG(ftrFn, 'image/x-emf', ftrB64) : '') +
-    PKG_DOCUMENT(result.body) +
+    PKG_IMG_RELS([{id: full.ftrRid, target: ftrFn}]) +
+    PKG_IMG(ftrFn, 'image/x-emf', ftrB64) +
+    PKG_DOCUMENT(full.body) +
     PKG_CLOSE();
+
+  return {primary: primaryPkg, firstPage: firstPagePkg};
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -957,7 +971,6 @@ function apply(){
   var isExtern = (typ === 'extern');
   var pname    = document.getElementById('prozessname').value.trim();
   var aort     = document.getElementById('ablageort').value.trim();
-  var kuerzel  = document.getElementById('kuerzel').value.trim();
   var datum    = document.getElementById('datum').value.trim();
   var d0 = new Date();
 
@@ -1000,7 +1013,7 @@ function apply(){
     briefPkg = PKG_OPEN()+PKG_ROOT_RELS()+PKG_CONTENT_RELS([])+PKG_STYLES()+PKG_NUMBERING()+PKG_DOCUMENT(briefBody)+PKG_CLOSE();
   }
 
-  function setPageOrientation(pkgXml, isQuer, isBriefMargins){
+  function setPageOrientation(pkgXml, isQuer, isBriefMargins, needTitlePg){
     var pgSz = isQuer
       ? '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>'
       : '<w:pgSz w:w="11906" w:h="16838"/>';
@@ -1009,14 +1022,16 @@ function apply(){
        the recipient address at couvert-window height. */
     var pgMar = isBriefMargins
       ? '<w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/>'
-      : '<w:pgMar w:top="2268" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>';
+      : '<w:pgMar w:top="2268" w:right="1134" w:bottom="720" w:left="1134" w:header="709" w:footer="454" w:gutter="0"/>';
+    var titlePg = needTitlePg ? '<w:titlePg/>' : '';
     var result = pkgXml
       .replace(/<w:pgSz\b[^>]*\/>/g, '')
-      .replace(/<w:pgMar\b[^>]*\/>/g, '');
+      .replace(/<w:pgMar\b[^>]*\/>/g, '')
+      .replace(/<w:titlePg\/>/g, '');
     if(result.indexOf('<w:sectPr') !== -1){
-      result = result.replace(/(<w:sectPr(?:\s[^>]*)?>)/, '$1'+pgSz+pgMar);
+      result = result.replace(/(<w:sectPr(?:\s[^>]*)?>)/, '$1'+pgSz+pgMar+titlePg);
     } else {
-      result = result.replace('</w:body>', '<w:sectPr>'+pgSz+pgMar+'</w:sectPr></w:body>');
+      result = result.replace('</w:body>', '<w:sectPr>'+pgSz+pgMar+titlePg+'</w:sectPr></w:body>');
     }
     return result;
   }
@@ -1028,12 +1043,17 @@ function apply(){
       var bodyOoxmlResult = ctx.document.body.getOoxml();
       return ctx.sync().then(function(){
         var s = sects.items[0];
-        var ftrPkg = isBrief
-          ? mkBriefFtrPkg()
-          : mkFtrPkg(dept, kuerzel, datum, isQuer, isExtern);
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-        s.getFooter('primary').insertOoxml(ftrPkg, 'Replace');
-        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief), 'Replace');
+        if(isBrief){
+          s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
+        } else {
+          var ftrResult = mkFtrPkg(dept, datum, isQuer, isExtern);
+          s.getFooter('primary').insertOoxml(ftrResult.primary, 'Replace');
+          if(isExtern){
+            s.getFooter('firstPage').insertOoxml(ftrResult.firstPage, 'Replace');
+          }
+        }
+        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, isExtern && !isBrief), 'Replace');
 
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
