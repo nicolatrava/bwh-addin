@@ -192,14 +192,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
       </div>
     </div>
 
-    <!-- Datum (not for Brief) -->
-    <div id="ver-fields">
-      <div class="field">
-        <label>Datum</label>
-        <input type="text" id="datum" placeholder="TT.MM.JJ"/>
-      </div>
-    </div>
-
     <!-- Brief-specific fields (only for Brief) -->
     <div id="brief-fields" class="hidden">
       <div class="profile-header">
@@ -314,8 +306,7 @@ function setTyp(v){
   document.getElementById('pname-fields').className=(v==='intern'?'':'hidden');
   // Metadaten step: always visible
   document.getElementById('meta-step').className='step';
-  // Version/Kürzel/Datum: not for Brief; Brief-fields only for Brief
-  document.getElementById('ver-fields').className=(v==='brief'?'hidden':'');
+  // Brief-fields only for Brief
   document.getElementById('brief-fields').className=(v==='brief'?'':'hidden');
   if(v==='brief'){fmt='hoch';}
 }
@@ -774,20 +765,22 @@ function mkBriefFtrPkg(){
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer OOXML builder
    ═══════════════════════════════════════════════════════════════════════════ */
-function buildMetaLine(datum){
+function buildMetaLine(){
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
+  /* CI: Seitenangabe mit grösserem Trennpunkt, danach Abstand (kein Punkt)
+     zum Dokumentnamen, kein Punkt am Schluss. Das Datum steht im Dateinamen. */
   var meta =
     fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
-    txt(' • ','A74E57',16,false) +
+    txt(' ','A74E57',16,false) +
+    txt('•','A74E57',24,false) +
+    txt(' ','A74E57',16,false) +
     fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
-    txt('  •  ','A74E57',16,false) +
-    fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16) +
-    txt('  •  ','A74E57',16,false) +
-    txt(datum||'','A74E57',16,false);
+    txt('      ','A74E57',16,false) +
+    fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16);
   return '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
 }
 
-function buildFtrBody(dept, datum, isQuer, isExtern){
+function buildFtrBody(dept, isQuer, isExtern){
   var n = _applyN;
   var ftrRid = 'rIdFtrBg'+n;
   var ftrDocprId = (n % 100) + 2;
@@ -797,7 +790,7 @@ function buildFtrBody(dept, datum, isQuer, isExtern){
   var totalW = isQuer ? 14601 : 9652;
 
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
-  var line1 = buildMetaLine(datum);
+  var line1 = buildMetaLine();
 
   /* Line 2: address — only for external documents */
   var line2 = '';
@@ -861,13 +854,13 @@ function buildFtrBody(dept, datum, isQuer, isExtern){
    - Internal docs: primary = minimal (meta only), no firstPage needed.
    - External docs: firstPage = full (address+logo+meta), primary = minimal.
    Caller sets s.getFooter('firstPage') only when isExtern=true. */
-function mkFtrPkg(dept, datum, isQuer, isExtern){
+function mkFtrPkg(dept, isQuer, isExtern){
   var n = _applyN;
   var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
   var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
 
-  /* Minimal footer: only page • numpages • filename • datum */
-  var minimalBody = buildMetaLine(datum);
+  /* Minimal footer: page • numpages   filename (Datum steht im Dateinamen) */
+  var minimalBody = buildMetaLine();
   var primaryPkg = PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(minimalBody) + PKG_CLOSE();
 
   if(!isExtern){
@@ -875,7 +868,7 @@ function mkFtrPkg(dept, datum, isQuer, isExtern){
   }
 
   /* Full footer for external page 1 (with address + BG logo) */
-  var full = buildFtrBody(dept, datum, isQuer, true);
+  var full = buildFtrBody(dept, isQuer, true);
   var firstPagePkg = PKG_OPEN() +
     PKG_ROOT_RELS() +
     PKG_IMG_RELS([{id: full.ftrRid, target: ftrFn}]) +
@@ -971,7 +964,6 @@ function apply(){
   var isExtern = (typ === 'extern');
   var pname    = document.getElementById('prozessname').value.trim();
   var aort     = document.getElementById('ablageort').value.trim();
-  var datum    = document.getElementById('datum').value.trim();
   var d0 = new Date();
 
   var isBrief = (typ === 'brief');
@@ -1038,23 +1030,13 @@ function apply(){
 
   setTimeout(function(){
     Word.run(function(ctx){
-      var sects = ctx.document.sections;
-      sects.load('items');
       var bodyOoxmlResult = ctx.document.body.getOoxml();
       return ctx.sync().then(function(){
-        var s = sects.items[0];
-        s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-        if(isBrief){
-          s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
-        } else {
-          var ftrResult = mkFtrPkg(dept, datum, isQuer, isExtern);
-          s.getFooter('primary').insertOoxml(ftrResult.primary, 'Replace');
-          if(isExtern){
-            s.getFooter('firstPage').insertOoxml(ftrResult.firstPage, 'Replace');
-          }
-        }
+        /* 1. Body first: this establishes the sectPr (incl. <w:titlePg/> for
+           externe Dokumente), so the first-page footer is honoured. Setting the
+           footers before the body-replace caused page 1 to fall back to the
+           primary (minimal) footer. */
         ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, isExtern && !isBrief), 'Replace');
-
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
         }
@@ -1063,12 +1045,34 @@ function apply(){
         }
         return ctx.sync();
       }).then(function(){
+        /* 2. Header/footer after the section (with titlePg) exists. */
+        var sects = ctx.document.sections;
+        sects.load('items');
+        return ctx.sync().then(function(){
+          var s = sects.items[0];
+          s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
+          if(isBrief){
+            s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
+          } else {
+            var ftrResult = mkFtrPkg(dept, isQuer, isExtern);
+            s.getFooter('primary').insertOoxml(ftrResult.primary, 'Replace');
+            if(isExtern){
+              /* titlePg is on → page 1 uses the first-page header/footer stories.
+                 The logo header must be set on firstPage too, otherwise page 1
+                 would lose its header. */
+              s.getHeader('firstPage').insertOoxml(hdrPkg, 'Replace');
+              s.getFooter('firstPage').insertOoxml(ftrResult.firstPage, 'Replace');
+            }
+          }
+          return ctx.sync();
+        });
+      }).then(function(){
         /* NOTE: We intentionally do NOT call ctx.document.save() here.
            Auto-saving created unwanted files in the user's Ablage. The user
            saves manually when they want to keep the document. */
         /* Save current state to document settings for next open */
         try {
-          var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, datum:datum, briefName:briefName, briefFunktion:briefFunktion, briefTelefon:briefTelefon, briefEmail:briefEmail});
+          var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, briefName:briefName, briefFunktion:briefFunktion, briefTelefon:briefTelefon, briefEmail:briefEmail});
           Office.context.document.settings.set('bwhAddinState', state);
           Office.context.document.settings.saveAsync(function(){});
         } catch(e){}
@@ -1130,12 +1134,6 @@ Office.onReady(function(info){
   setTyp('intern');
   setFmt('hoch');
   inhaltSet={}; ['muster','ivz','titel'].forEach(function(k){document.getElementById('btn-'+k).className='tbtn';});
-  /* Set today's date as default */
-  var d = new Date();
-  var dd = String(d.getDate()).padStart(2,'0');
-  var mm = String(d.getMonth()+1).padStart(2,'0');
-  var yy = String(d.getFullYear()).slice(-2);
-  document.getElementById('datum').value = dd+'.'+mm+'.'+yy;
 
   /* Prefill personal Brief fields from this user's last apply (any document).
      Replaces the old AD macro: type once, remembered afterwards. */
@@ -1177,7 +1175,6 @@ Office.onReady(function(info){
         }
         if(saved.pname        !== undefined) document.getElementById('prozessname').value    = saved.pname;
         if(saved.aort         !== undefined) document.getElementById('ablageort').value      = saved.aort;
-        if(saved.datum        !== undefined && saved.datum) document.getElementById('datum').value = saved.datum;
         /* only overwrite the localStorage prefill when the document has real values */
         if(saved.briefName)     document.getElementById('brief-name').value     = saved.briefName;
         if(saved.briefFunktion) document.getElementById('brief-funktion').value = saved.briefFunktion;
