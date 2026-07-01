@@ -1030,12 +1030,26 @@ function apply(){
 
   setTimeout(function(){
     Word.run(function(ctx){
+      var sects = ctx.document.sections;
+      sects.load('items');
       var bodyOoxmlResult = ctx.document.body.getOoxml();
       return ctx.sync().then(function(){
-        /* 1. Body first: this establishes the sectPr (incl. <w:titlePg/> for
-           externe Dokumente), so the first-page footer is honoured. Setting the
-           footers before the body-replace caused page 1 to fall back to the
-           primary (minimal) footer. */
+        var s = sects.items[0];
+        /* Kopf-/Fusszeile im selben Batch setzen (so erscheinen sie
+           zuverlässig). Für externe Dokumente eigene erste Seite: Header
+           (Logo) UND Footer müssen auf firstPage gesetzt werden, sonst
+           verliert Seite 1 Kopf- bzw. Fusszeile. */
+        s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
+        if(isBrief){
+          s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
+        } else {
+          var ftrResult = mkFtrPkg(dept, isQuer, isExtern);
+          s.getFooter('primary').insertOoxml(ftrResult.primary, 'Replace');
+          if(isExtern){
+            s.getHeader('firstPage').insertOoxml(hdrPkg, 'Replace');
+            s.getFooter('firstPage').insertOoxml(ftrResult.firstPage, 'Replace');
+          }
+        }
         ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, isExtern && !isBrief), 'Replace');
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
@@ -1044,28 +1058,6 @@ function apply(){
           ctx.document.body.insertOoxml(briefPkg, Word.InsertLocation.start);
         }
         return ctx.sync();
-      }).then(function(){
-        /* 2. Header/footer after the section (with titlePg) exists. */
-        var sects = ctx.document.sections;
-        sects.load('items');
-        return ctx.sync().then(function(){
-          var s = sects.items[0];
-          s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-          if(isBrief){
-            s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
-          } else {
-            var ftrResult = mkFtrPkg(dept, isQuer, isExtern);
-            s.getFooter('primary').insertOoxml(ftrResult.primary, 'Replace');
-            if(isExtern){
-              /* titlePg is on → page 1 uses the first-page header/footer stories.
-                 The logo header must be set on firstPage too, otherwise page 1
-                 would lose its header. */
-              s.getHeader('firstPage').insertOoxml(hdrPkg, 'Replace');
-              s.getFooter('firstPage').insertOoxml(ftrResult.firstPage, 'Replace');
-            }
-          }
-          return ctx.sync();
-        });
       }).then(function(){
         /* NOTE: We intentionally do NOT call ctx.document.save() here.
            Auto-saving created unwanted files in the user's Ablage. The user
