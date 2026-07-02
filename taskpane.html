@@ -8,6 +8,7 @@
 <meta http-equiv="Expires" content="0"/>
 <title>BWH Vorlagen</title>
 <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.4/js/msal-browser.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--red:#A74F58;--red-light:#fdf5f6;--gray:#f5f5f5;--border:#e8e8e8}
@@ -79,6 +80,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 .profile-badge{font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:2px 7px;font-weight:600}
 .profile-reset{font-size:10px;color:#bbb;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline}
 .profile-hint{font-size:10px;color:#bbb;margin-top:4px}
+.ad-btn{width:100%;margin-top:9px;padding:8px;background:white;color:var(--red);
+  border:1.5px solid var(--red);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.ad-btn:hover{background:var(--red-light)}
+.ad-btn:disabled{opacity:.55;cursor:default}
 </style>
 </head>
 <body>
@@ -215,6 +220,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
         <label>E-Mail</label>
         <input type="text" id="brief-email" placeholder="z.B. m.muster@waisehuus.ch"/>
       </div>
+      <button type="button" class="ad-btn" id="ad-load" onclick="loadFromActiveDirectory(true)">Aus Active Directory laden</button>
       <div class="profile-hint" id="profile-hint">Wird nach dem ersten Anwenden automatisch gespeichert.</div>
     </div>
   </div>
@@ -1116,6 +1122,92 @@ function clearBriefProfile(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   Active Directory (Azure AD / Microsoft Graph) — Profil automatisch füllen
+   Ersetzt das alte AD-Makro: liest Name, Funktion, Telefon und E-Mail direkt
+   aus dem Verzeichnis. Bei jedem Fehler stiller Rückfall auf das manuelle
+   Profil (localStorage) – die App funktioniert immer.
+   ═══════════════════════════════════════════════════════════════════════════ */
+var AAD_CLIENT_ID = 'a5e6a291-66c5-41cb-aae7-47fff5e1a869';
+/* Single-Tenant-App: Authority auf den BWH-Mandanten. Die verifizierte Domain
+   funktioniert als Mandanten-Bezeichner. Falls die Anmeldung mit einem Fehler
+   wie AADSTS50194/900023 scheitert, hier die Verzeichnis-(Mandanten-)ID aus
+   dem Azure-Portal eintragen:
+   'https://login.microsoftonline.com/<TENANT-ID>' */
+var AAD_AUTHORITY = 'https://login.microsoftonline.com/waisehuus.ch';
+var AAD_REDIRECT  = 'https://nicolatrava.github.io/bwh-addin/taskpane.html';
+var _msalPromise = null;
+
+function getMsalAsync(){
+  if(_msalPromise) return _msalPromise;
+  if(typeof msal === 'undefined'){ _msalPromise = Promise.resolve(null); return _msalPromise; }
+  try{
+    var pca = new msal.PublicClientApplication({
+      auth:  { clientId: AAD_CLIENT_ID, authority: AAD_AUTHORITY, redirectUri: AAD_REDIRECT },
+      cache: { cacheLocation: 'localStorage' }
+    });
+    var init = (typeof pca.initialize === 'function') ? pca.initialize() : Promise.resolve();
+    _msalPromise = init.then(function(){
+      var hr = (typeof pca.handleRedirectPromise === 'function') ? pca.handleRedirectPromise() : Promise.resolve();
+      return hr.catch(function(){}).then(function(){ return pca; });
+    }).catch(function(){ return null; });
+  }catch(e){ _msalPromise = Promise.resolve(null); }
+  return _msalPromise;
+}
+
+function adAcquireToken(pca, interactive){
+  var req = { scopes: ['User.Read'] };
+  var accts = pca.getAllAccounts();
+  if(accts && accts.length){
+    return pca.acquireTokenSilent({ scopes: ['User.Read'], account: accts[0] })
+      .catch(function(e){ if(interactive) return pca.acquireTokenPopup(req); throw e; });
+  }
+  if(interactive) return pca.loginPopup(req);
+  return pca.ssoSilent(req);
+}
+
+function fillBriefFromAD(me){
+  if(!me) return;
+  var name = me.displayName || [me.givenName, me.surname].filter(Boolean).join(' ');
+  var tel  = me.mobilePhone || (me.businessPhones && me.businessPhones[0]) || '';
+  var mail = me.mail || me.userPrincipalName || '';
+  function set(id, val){ var el = document.getElementById(id); if(el && val) el.value = val; }
+  set('brief-name', name);
+  set('brief-funktion', me.jobTitle || '');
+  set('brief-telefon', tel);
+  set('brief-email', mail);
+  try{
+    localStorage.setItem('bwhBriefPersonal', JSON.stringify({
+      name: name, funktion: me.jobTitle || '', telefon: tel, email: mail
+    }));
+  }catch(e){}
+  showProfileSaved();
+}
+
+function loadFromActiveDirectory(interactive){
+  var btn = document.getElementById('ad-load');
+  if(btn && interactive){ btn.disabled = true; btn.textContent = 'Lädt…'; }
+  return getMsalAsync().then(function(pca){
+    if(!pca) throw new Error('MSAL nicht verfügbar');
+    return adAcquireToken(pca, interactive);
+  }).then(function(res){
+    return fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,givenName,surname,jobTitle,mobilePhone,businessPhones,mail,userPrincipalName', {
+      headers: { Authorization: 'Bearer ' + res.accessToken }
+    });
+  }).then(function(r){ return r.json(); }).then(function(me){
+    fillBriefFromAD(me);
+    if(btn){ btn.disabled = false; btn.textContent = 'Aus Active Directory laden'; }
+    return true;
+  }).catch(function(e){
+    if(btn){ btn.disabled = false; btn.textContent = 'Aus Active Directory laden'; }
+    if(interactive){
+      var hint = document.getElementById('profile-hint');
+      if(hint){ hint.classList.remove('hidden'); hint.textContent = 'Automatisches Auslesen nicht möglich – bitte Angaben manuell eintragen.'; }
+    }
+    return false;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    Init
    ═══════════════════════════════════════════════════════════════════════════ */
 Office.onReady(function(info){
@@ -1140,6 +1232,11 @@ Office.onReady(function(info){
       showProfileSaved();
     }
   } catch(e){}
+
+  /* Try to auto-fill from Active Directory without a popup. Works once the
+     user has consented interactively before (cached account) or an SSO session
+     exists. Fails silently otherwise – the button offers the interactive path. */
+  try { loadFromActiveDirectory(false); } catch(e){}
 
   /* Restore form values saved in document settings from last apply */
   try {
