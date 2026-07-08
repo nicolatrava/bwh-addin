@@ -8,7 +8,7 @@
 <meta http-equiv="Expires" content="0"/>
 <title>BWH Vorlagen</title>
 <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
-<script src="https://alcdn.msauth.net/browser/2.38.4/js/msal-browser.min.js"></script>
+<script src="msal-browser.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--red:#A74F58;--red-light:#fdf5f6;--gray:#f5f5f5;--border:#e8e8e8}
@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-08 · 17 (Fusszeile Muster)</div>
+  <div class="build">Build 2026-07-08 · 18 (Rand + AD lokal)</div>
 </div>
 
 <script>
@@ -852,10 +852,14 @@ function buildFtrBody(dept, isQuer){
   return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
 }
 
-/* Einfache Fusszeile (intern alle Seiten, extern ab Seite 2):
-   Seite • von • Dateiname • Datum. */
+/* Einfache Fusszeile: Seite • von • Dateiname • Datum. */
 function mkFtrSimplePkg(){
   return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(false)) + PKG_CLOSE();
+}
+
+/* Intern: Meta mit Versionierung (Version: XY • Kürzel: XY), ohne Adresse/Logo. */
+function mkFtrMetaFullPkg(){
+  return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(true)) + PKG_CLOSE();
 }
 
 /* Volle Fusszeile (extern Seite 1): Meta + Adresse + BG-Logo. */
@@ -1007,7 +1011,7 @@ function apply(){
        the recipient address at couvert-window height. */
     var pgMar = isBriefMargins
       ? '<w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/>'
-      : '<w:pgMar w:top="2551" w:right="1134" w:bottom="720" w:left="1134" w:header="709" w:footer="454" w:gutter="0"/>';
+      : '<w:pgMar w:top="1701" w:right="1134" w:bottom="1304" w:left="1134" w:header="680" w:footer="510" w:gutter="0"/>';
     var titlePg = needTitlePg ? '<w:titlePg/>' : '';
     var result = pkgXml
       .replace(/<w:pgSz\b[^>]*\/>/g, '')
@@ -1029,26 +1033,23 @@ function apply(){
       return ctx.sync().then(function(){
         var s = sects.items[0];
         /* Kopf-/Fusszeile im selben Batch setzen (so erscheinen sie zuverlässig).
-           Intern: einfache Fusszeile auf allen Seiten.
-           Extern: Seite 1 voll (Adresse + BG-Logo), ab Seite 2 einfach
-                   (eigene erste Seite via titlePg). */
+           Eine Fusszeile für alle Seiten (Word Online zeigt eine «eigene erste
+           Seite» nicht zuverlässig an, darum bewusst einheitlich):
+           - Intern: Meta + Version: XY • Kürzel: XY
+           - Extern: dasselbe + Adresszeile + BG-Logo */
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-        if(isBrief){
-          s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
-        } else if(isExtern){
-          s.getFooter('primary').insertOoxml(mkFtrSimplePkg(), 'Replace');
-          s.getHeader('firstPage').insertOoxml(hdrPkg, 'Replace');
-          s.getFooter('firstPage').insertOoxml(mkFtrFullPkg(dept, isQuer), 'Replace');
-        } else {
-          s.getFooter('primary').insertOoxml(mkFtrSimplePkg(), 'Replace');
-        }
-        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, isExtern), 'Replace');
-        if(combinedPkg){
-          ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
-        }
-        if(briefPkg){
-          ctx.document.body.insertOoxml(briefPkg, Word.InsertLocation.start);
-        }
+        s.getFooter('primary').insertOoxml(
+          isBrief ? mkBriefFtrPkg()
+                  : (isExtern ? mkFtrFullPkg(dept, isQuer) : mkFtrMetaFullPkg()),
+          'Replace');
+        /* Inhalt MIT Rand/Ausrichtung als EIN Replace einfügen, damit der
+           Seitenrand auf ALLEN Seiten greift (frühere Variante fügte den Inhalt
+           separat ein, wodurch die Musterseiten den Standardrand behielten und
+           der Text am Logo klebte). */
+        var contentPkg = briefPkg || combinedPkg;
+        ctx.document.body.insertOoxml(
+          setPageOrientation(contentPkg || bodyOoxmlResult.value, isQuer, isBrief, false),
+          'Replace');
         return ctx.sync();
       }).then(function(){
         /* NOTE: We intentionally do NOT call ctx.document.save() here.
