@@ -70,6 +70,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 .btn{width:100%;padding:11px;background:var(--red);color:white;border:none;
   border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.2px}
 .btn:disabled{background:#ccc;cursor:not-allowed}
+.build{text-align:center;font-size:9px;color:#c8c8c8;margin-top:5px;letter-spacing:.03em}
 .status{margin-top:8px;padding:7px 12px;border-radius:6px;font-size:12px;
   text-align:center;display:none}
 .status.ok{background:#e8f5e9;color:#2e7d32;display:block}
@@ -231,6 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
+  <div class="build">Build 2026-07-08 · 17 (Fusszeile Muster)</div>
 </div>
 
 <script>
@@ -772,22 +774,25 @@ function mkBriefFtrPkg(){
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer OOXML builder
    ═══════════════════════════════════════════════════════════════════════════ */
-function buildMetaLine(){
-  var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
-  var C = 'A74E57', S = 16;
-  /* Versionierung nach Intranet-Standard (im ganzen Dokument, gleich auf allen
-     Seiten): Seite • Dokumentname • Datum der Bearbeitung • Version • Kürzel.
-     Datum, Version und Kürzel sind Platzhalter, die manuell ausgefüllt werden. */
-  var meta =
-    txt('Seite ', C, S, false) +
-    fld('PAGE \\* Arabic \\* MERGEFORMAT', '1', C, S) +
-    txt('  •  ', C, S, false) +
-    fld('FILENAME \\* MERGEFORMAT', 'Dokument', C, S) +
-    txt('  •  Datum der Bearbeitung XXXX-XX-XX  •  Version XXXX-XX-XX  •  Kürzel des Erstellers', C, S, false);
-  return '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+meta+'</w:p>';
+function ftrDatum(){
+  var d = new Date(), p = function(n){ return (n<10?'0':'')+n; };
+  return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(-2);
 }
 
-function buildFtrBody(dept, isQuer, isExtern){
+/* Meta-Zeile wie in den Musterdokumenten (A4 Hoch):
+   Seite • von • Dateiname • Datum            (einfach – intern + Folgeseiten)
+   + « • Version: XY • Kürzel: XY »           (voll – Seite 1 extern) */
+function buildFtrMeta(full){
+  var C='A74E57', S=16, sp='<w:spacing w:before="0" w:after="0"/>';
+  var meta =
+    fld('PAGE \\* Arabic \\* MERGEFORMAT','1',C,S) + txt(' • ',C,S,false) +
+    fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1',C,S) + txt(' • ',C,S,false) +
+    fld('FILENAME \\* MERGEFORMAT','Dokument',C,S) + txt(' • ',C,S,false) +
+    txt(ftrDatum() + (full ? ' • Version: XY • Kürzel: XY' : ''), C, S, false);
+  return '<w:p><w:pPr>'+sp+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+meta+'</w:p>';
+}
+
+function buildFtrBody(dept, isQuer){
   var n = _applyN;
   var ftrRid = 'rIdFtrBg'+n;
   var ftrDocprId = (n % 100) + 2;
@@ -797,27 +802,18 @@ function buildFtrBody(dept, isQuer, isExtern){
   var totalW = isQuer ? 14601 : 9652;
 
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
-  var line1 = buildMetaLine();
+  var line1 = buildFtrMeta(true);
 
-  /* Line 2: address — only for external documents */
-  var line2 = '';
-  if(isExtern){
-    var addrParts = ['Bürgerliches Waisenhaus Basel'];
-    if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
-    addrParts.push(dept.street);
-    addrParts.push(dept.plz+' Basel');
-    addrParts.push('www.waisehuus.ch');
-    line2 =
-      '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
-      '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
-      '<w:t>'+esc(addrParts.join('  •  '))+'</w:t></w:r>'+
-      '</w:p>';
-  }
+  /* Adresszeile wie Musterdokument: BWH Basel • Strasse • PLZ Basel • Web
+     (ohne Abteilungsnamen). */
+  var addr = ['Bürgerliches Waisenhaus Basel', dept.street, dept.plz+' Basel', 'www.waisehuus.ch'].join(' • ');
+  var line2 =
+    '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
+    '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
+    '<w:t>'+esc(addr)+'</w:t></w:r>'+
+    '</w:p>';
 
-  /* Right cell: BG Basel logo only for extern */
-  var rightCell = isExtern
-    ? '<w:p><w:pPr>'+ftrSpc+'<w:pStyle w:val="WHBox"/><w:jc w:val="right"/></w:pPr></w:p>'
-    : '<w:p><w:pPr>'+ftrSpc+'</w:pPr></w:p>';
+  var rightCell = '<w:p><w:pPr>'+ftrSpc+'<w:pStyle w:val="WHBox"/><w:jc w:val="right"/></w:pPr></w:p>';
 
   var nb =
     '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
@@ -843,31 +839,31 @@ function buildFtrBody(dept, isQuer, isExtern){
       '</w:tr>'+
     '</w:tbl>';
 
-  /* Background bar (contains BG Basel logo) — only for extern */
-  var bgPara = isExtern
-    ? '<w:p>'+
-        '<w:pPr><w:tabs><w:tab w:val="right" w:pos="9071"/></w:tabs>'+
-        '<w:rPr><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr>'+
-        '<w:r><w:rPr><w:noProof/></w:rPr>'+
-          ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+
-        '</w:r>'+
-      '</w:p>'
-    : '';
+  /* Hintergrund-Balken mit BG-Basel-Logo. */
+  var bgPara =
+    '<w:p>'+
+      '<w:pPr><w:tabs><w:tab w:val="right" w:pos="9071"/></w:tabs>'+
+      '<w:rPr><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr>'+
+      '<w:r><w:rPr><w:noProof/></w:rPr>'+
+        ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+
+      '</w:r>'+
+    '</w:p>';
 
   return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
 }
 
-/* Eine Fusszeile für alle Seiten (kein «eigene erste Seite» mehr).
-   Intern: nur die Versionszeile.
-   Extern: Versionszeile + Adresse + BG-Logo. */
-function mkFtrPkg(dept, isQuer, isExtern){
+/* Einfache Fusszeile (intern alle Seiten, extern ab Seite 2):
+   Seite • von • Dateiname • Datum. */
+function mkFtrSimplePkg(){
+  return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(false)) + PKG_CLOSE();
+}
+
+/* Volle Fusszeile (extern Seite 1): Meta + Adresse + BG-Logo. */
+function mkFtrFullPkg(dept, isQuer){
   var n = _applyN;
-  if(!isExtern){
-    return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildMetaLine()) + PKG_CLOSE();
-  }
   var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
   var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
-  var full = buildFtrBody(dept, isQuer, true);
+  var full = buildFtrBody(dept, isQuer);
   return PKG_OPEN() +
     PKG_ROOT_RELS() +
     PKG_IMG_RELS([{id: full.ftrRid, target: ftrFn}]) +
@@ -1032,12 +1028,21 @@ function apply(){
       var bodyOoxmlResult = ctx.document.body.getOoxml();
       return ctx.sync().then(function(){
         var s = sects.items[0];
-        /* Kopf-/Fusszeile im selben Batch setzen (so erscheinen sie
-           zuverlässig). Eine Fusszeile für alle Seiten – gleich auf S. 1 und 2. */
+        /* Kopf-/Fusszeile im selben Batch setzen (so erscheinen sie zuverlässig).
+           Intern: einfache Fusszeile auf allen Seiten.
+           Extern: Seite 1 voll (Adresse + BG-Logo), ab Seite 2 einfach
+                   (eigene erste Seite via titlePg). */
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-        s.getFooter('primary').insertOoxml(
-          isBrief ? mkBriefFtrPkg() : mkFtrPkg(dept, isQuer, isExtern), 'Replace');
-        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, false), 'Replace');
+        if(isBrief){
+          s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
+        } else if(isExtern){
+          s.getFooter('primary').insertOoxml(mkFtrSimplePkg(), 'Replace');
+          s.getHeader('firstPage').insertOoxml(hdrPkg, 'Replace');
+          s.getFooter('firstPage').insertOoxml(mkFtrFullPkg(dept, isQuer), 'Replace');
+        } else {
+          s.getFooter('primary').insertOoxml(mkFtrSimplePkg(), 'Replace');
+        }
+        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, isExtern), 'Replace');
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
         }
@@ -1182,7 +1187,7 @@ function loadFromActiveDirectory(interactive){
     if(btn){ btn.disabled = false; btn.textContent = 'Aus Active Directory laden'; }
     if(interactive){
       var hint = document.getElementById('profile-hint');
-      if(hint){ hint.classList.remove('hidden'); hint.textContent = 'Automatisches Auslesen nicht möglich – bitte Angaben manuell eintragen.'; }
+      if(hint){ hint.classList.remove('hidden'); hint.textContent = 'AD-Fehler: ' + ((e && (e.errorCode || e.message)) || e) + ' — bitte manuell eintragen.'; }
     }
     return false;
   });
