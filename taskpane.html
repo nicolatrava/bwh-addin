@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-08 · 21 (Kopf-Abstand, Brief zurück)</div>
+  <div class="build">Build 2026-07-08 · 22 (Footer-Luecke)</div>
 </div>
 
 <script>
@@ -834,7 +834,9 @@ function buildFtrBody(dept, isQuer){
       '</w:tblPr>'+
       '<w:tblGrid><w:gridCol w:w="'+lW+'"/><w:gridCol w:w="'+rW+'"/></w:tblGrid>'+
       '<w:tr>'+
-        '<w:tc><w:tcPr><w:tcW w:w="'+lW+'" w:type="dxa"/></w:tcPr>'+line1+line2+'</w:tc>'+
+        '<w:tc><w:tcPr><w:tcW w:w="'+lW+'" w:type="dxa"/></w:tcPr>'+line1+line2+
+          '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr></w:p>'+
+        '</w:tc>'+
         '<w:tc><w:tcPr><w:tcW w:w="'+rW+'" w:type="dxa"/></w:tcPr>'+rightCell+'</w:tc>'+
       '</w:tr>'+
     '</w:tbl>';
