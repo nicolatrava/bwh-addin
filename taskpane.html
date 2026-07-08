@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-08 · 19 (Kopfzeile Abstand)</div>
+  <div class="build">Build 2026-07-08 · 20 (Kopf grösser, Brief-Logo)</div>
 </div>
 
 <script>
@@ -1011,7 +1011,7 @@ function apply(){
        the recipient address at couvert-window height. */
     var pgMar = isBriefMargins
       ? '<w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/>'
-      : '<w:pgMar w:top="1701" w:right="1134" w:bottom="1304" w:left="1134" w:header="680" w:footer="510" w:gutter="0"/>';
+      : '<w:pgMar w:top="2268" w:right="1134" w:bottom="1304" w:left="1134" w:header="680" w:footer="510" w:gutter="0"/>';
     var titlePg = needTitlePg ? '<w:titlePg/>' : '';
     var result = pkgXml
       .replace(/<w:pgSz\b[^>]*\/>/g, '')
@@ -1039,7 +1039,7 @@ function apply(){
            - Extern: dasselbe + Adresszeile + BG-Logo */
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(
-          isBrief ? mkBriefFtrPkg()
+          isBrief ? mkFtrFullPkg(dept, false)
                   : (isExtern ? mkFtrFullPkg(dept, isQuer) : mkFtrMetaFullPkg()),
           'Replace');
         /* Inhalt MIT Rand/Ausrichtung als EIN Replace einfügen, damit der
