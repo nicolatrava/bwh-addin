@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-08 · 22 (Footer-Luecke)</div>
+  <div class="build">Build 2026-07-08 · 23 (Intern Adresse)</div>
 </div>
 
 <script>
@@ -859,9 +859,15 @@ function mkFtrSimplePkg(){
   return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(false)) + PKG_CLOSE();
 }
 
-/* Intern: Meta mit Versionierung (Version: XY • Kürzel: XY), ohne Adresse/Logo. */
-function mkFtrMetaFullPkg(){
-  return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(true)) + PKG_CLOSE();
+/* Intern: Meta mit Versionierung + Adresszeile (ohne BG-Logo). */
+function mkFtrMetaFullPkg(dept){
+  var C='A74E57', S=16, sp='<w:spacing w:before="0" w:after="0"/>';
+  var addr = ['Bürgerliches Waisenhaus Basel', dept.street, dept.plz+' Basel', 'www.waisehuus.ch'].join(' • ');
+  var addrLine =
+    '<w:p><w:pPr>'+sp+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
+    '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
+    '<w:t>'+esc(addr)+'</w:t></w:r></w:p>';
+  return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(true) + addrLine) + PKG_CLOSE();
 }
 
 /* Volle Fusszeile (extern Seite 1): Meta + Adresse + BG-Logo. */
@@ -1042,7 +1048,7 @@ function apply(){
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
         s.getFooter('primary').insertOoxml(
           isBrief ? mkBriefFtrPkg()
-                  : (isExtern ? mkFtrFullPkg(dept, isQuer) : mkFtrMetaFullPkg()),
+                  : (isExtern ? mkFtrFullPkg(dept, isQuer) : mkFtrMetaFullPkg(dept)),
           'Replace');
         /* Inhalt MIT Rand/Ausrichtung als EIN Replace einfügen, damit der
            Seitenrand auf ALLEN Seiten greift (frühere Variante fügte den Inhalt
