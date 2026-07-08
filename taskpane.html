@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-08 · 24 (Klebe-Fix frischer Absatz)</div>
+  <div class="build">Build 2026-07-08 · 25 (Schreiben repariert)</div>
 </div>
 
 <script>
@@ -1055,14 +1055,8 @@ function apply(){
            separat ein, wodurch die Musterseiten den Standardrand behielten und
            der Text am Logo klebte). */
         var contentPkg = briefPkg || combinedPkg;
-        /* Ohne Musterinhalt: einen FRISCHEN leeren Absatz einsetzen statt das
-           bestehende Dokument wiederzuverwenden. Nur so übernimmt Word den
-           Seitenrand (bei wiederverwendetem Inhalt bleibt der Standardrand,
-           dadurch klebte der Text am Logo). */
-        var freshEmpty = PKG_OPEN() + PKG_ROOT_RELS() +
-          PKG_DOCUMENT('<w:p><w:pPr><w:rPr><w:lang w:val="de-CH"/></w:rPr></w:pPr></w:p>') + PKG_CLOSE();
         ctx.document.body.insertOoxml(
-          setPageOrientation(contentPkg || freshEmpty, isQuer, isBrief, false),
+          setPageOrientation(contentPkg || bodyOoxmlResult.value, isQuer, isBrief, false),
           'Replace');
         return ctx.sync();
       }).then(function(){
