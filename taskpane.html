@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-08 · 18 (Rand + AD lokal)</div>
+  <div class="build">Build 2026-07-08 · 19 (Kopfzeile Abstand)</div>
 </div>
 
 <script>
@@ -648,7 +648,7 @@ function buildHdrBody(isQuer, isExtern, isBrief, pname, aort, deptName, logoRid,
   var deptText = (deptName === 'Allgemeine Vorlage') ? '' : deptName;
   var logoPara =
     '<w:p>'+
-      '<w:pPr><w:spacing w:before="0" w:after="400"/><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="144"/><w:szCs w:val="144"/></w:rPr></w:pPr>'+
+      '<w:pPr><w:spacing w:before="0" w:after="240" w:line="240" w:lineRule="auto"/><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr>'+
       '<w:r><w:rPr><w:b/><w:noProof/><w:color w:val="A74E57"/><w:sz w:val="144"/><w:szCs w:val="144"/></w:rPr>'+
         logoAnchor(logoRid, logoDocprId, isQuer)+
       '</w:r>'+
