@@ -310,8 +310,9 @@ function setTyp(v){
   if(briefHide){ inhaltSet['muster']=false; musterBtn.className='tbtn'; }
   // Prozessname fields: only Intern
   document.getElementById('pname-fields').className=(v==='intern'?'':'hidden');
-  // Metadaten step: always visible
-  document.getElementById('meta-step').className='step';
+  // Metadaten step: nur wo es Felder gibt (Intern: Prozessname; Brief: Profil).
+  // Für Extern gibt es keine Felder → ausblenden (sonst leerer Abschnitt).
+  document.getElementById('meta-step').className='step'+(v==='extern'?' hidden':'');
   // Brief-fields only for Brief
   document.getElementById('brief-fields').className=(v==='brief'?'':'hidden');
   if(v==='brief'){fmt='hoch';}
@@ -322,19 +323,19 @@ function setFmt(v){
   ['hoch','quer'].forEach(function(k){
     document.getElementById('btn-'+k).className='tbtn'+(k===v?' on':'');
   });
-  // Titelblatt + Musterinhalt + IVZ only available for Hoch
+  // Nur das Titelblatt ist A4-Hoch-only → in Quer ausblenden.
+  // Musterinhalt und Inhaltsverzeichnis sind auch in Quer nutzbar.
+  var tb = document.getElementById('btn-titel');
   if(v==='quer'){
-    ['titel','muster','ivz'].forEach(function(k){
-      inhaltSet[k]=false;
-      document.getElementById('btn-'+k).className='tbtn';
-      document.getElementById('btn-'+k).disabled=true;
-    });
+    inhaltSet['titel']=false;
+    tb.className='tbtn';
+    tb.style.display='none';
   } else {
-    ['titel','muster','ivz'].forEach(function(k){
-      document.getElementById('btn-'+k).disabled=false;
-    });
+    tb.style.display='';
   }
-  updateInhaltHints();
+  ['titel','muster','ivz'].forEach(function(k){
+    document.getElementById('btn-'+k).disabled=false;
+  });
 }
 
 var INH_HINTS={
@@ -773,17 +774,17 @@ function mkBriefFtrPkg(){
    ═══════════════════════════════════════════════════════════════════════════ */
 function buildMetaLine(){
   var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
-  /* CI: Seitenangabe mit grösserem Trennpunkt, danach Abstand (kein Punkt)
-     zum Dokumentnamen, kein Punkt am Schluss. Das Datum steht im Dateinamen. */
+  var C = 'A74E57', S = 16;
+  /* Versionierung nach Intranet-Standard (im ganzen Dokument, gleich auf allen
+     Seiten): Seite • Dokumentname • Datum der Bearbeitung • Version • Kürzel.
+     Datum, Version und Kürzel sind Platzhalter, die manuell ausgefüllt werden. */
   var meta =
-    fld('PAGE \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
-    txt(' ','A74E57',16,false) +
-    txt('•','A74E57',24,false) +
-    txt(' ','A74E57',16,false) +
-    fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1','A74E57',16) +
-    txt('      ','A74E57',16,false) +
-    fld('FILENAME \\* MERGEFORMAT','Dokument','A74E57',16);
-  return '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+meta+'</w:p>';
+    txt('Seite ', C, S, false) +
+    fld('PAGE \\* Arabic \\* MERGEFORMAT', '1', C, S) +
+    txt('  •  ', C, S, false) +
+    fld('FILENAME \\* MERGEFORMAT', 'Dokument', C, S) +
+    txt('  •  Datum der Bearbeitung XXXX-XX-XX  •  Version XXXX-XX-XX  •  Kürzel des Erstellers', C, S, false);
+  return '<w:p><w:pPr>'+ftrSpc+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+meta+'</w:p>';
 }
 
 function buildFtrBody(dept, isQuer, isExtern){
@@ -856,33 +857,23 @@ function buildFtrBody(dept, isQuer, isExtern){
   return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
 }
 
-/* Returns {primary, firstPage}.
-   - Internal docs: primary = minimal (meta only), no firstPage needed.
-   - External docs: firstPage = full (address+logo+meta), primary = minimal.
-   Caller sets s.getFooter('firstPage') only when isExtern=true. */
+/* Eine Fusszeile für alle Seiten (kein «eigene erste Seite» mehr).
+   Intern: nur die Versionszeile.
+   Extern: Versionszeile + Adresse + BG-Logo. */
 function mkFtrPkg(dept, isQuer, isExtern){
   var n = _applyN;
+  if(!isExtern){
+    return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildMetaLine()) + PKG_CLOSE();
+  }
   var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
   var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
-
-  /* Minimal footer: page • numpages   filename (Datum steht im Dateinamen) */
-  var minimalBody = buildMetaLine();
-  var primaryPkg = PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(minimalBody) + PKG_CLOSE();
-
-  if(!isExtern){
-    return {primary: primaryPkg, firstPage: null};
-  }
-
-  /* Full footer for external page 1 (with address + BG logo) */
   var full = buildFtrBody(dept, isQuer, true);
-  var firstPagePkg = PKG_OPEN() +
+  return PKG_OPEN() +
     PKG_ROOT_RELS() +
     PKG_IMG_RELS([{id: full.ftrRid, target: ftrFn}]) +
     PKG_IMG(ftrFn, 'image/x-emf', ftrB64) +
     PKG_DOCUMENT(full.body) +
     PKG_CLOSE();
-
-  return {primary: primaryPkg, firstPage: firstPagePkg};
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1020,7 +1011,7 @@ function apply(){
        the recipient address at couvert-window height. */
     var pgMar = isBriefMargins
       ? '<w:pgMar w:top="2242" w:right="2975" w:bottom="1134" w:left="1474" w:header="0" w:footer="351" w:gutter="0"/>'
-      : '<w:pgMar w:top="2268" w:right="1134" w:bottom="720" w:left="1134" w:header="709" w:footer="454" w:gutter="0"/>';
+      : '<w:pgMar w:top="2551" w:right="1134" w:bottom="720" w:left="1134" w:header="709" w:footer="454" w:gutter="0"/>';
     var titlePg = needTitlePg ? '<w:titlePg/>' : '';
     var result = pkgXml
       .replace(/<w:pgSz\b[^>]*\/>/g, '')
@@ -1042,21 +1033,11 @@ function apply(){
       return ctx.sync().then(function(){
         var s = sects.items[0];
         /* Kopf-/Fusszeile im selben Batch setzen (so erscheinen sie
-           zuverlässig). Für externe Dokumente eigene erste Seite: Header
-           (Logo) UND Footer müssen auf firstPage gesetzt werden, sonst
-           verliert Seite 1 Kopf- bzw. Fusszeile. */
+           zuverlässig). Eine Fusszeile für alle Seiten – gleich auf S. 1 und 2. */
         s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-        if(isBrief){
-          s.getFooter('primary').insertOoxml(mkBriefFtrPkg(), 'Replace');
-        } else {
-          var ftrResult = mkFtrPkg(dept, isQuer, isExtern);
-          s.getFooter('primary').insertOoxml(ftrResult.primary, 'Replace');
-          if(isExtern){
-            s.getHeader('firstPage').insertOoxml(hdrPkg, 'Replace');
-            s.getFooter('firstPage').insertOoxml(ftrResult.firstPage, 'Replace');
-          }
-        }
-        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, isExtern && !isBrief), 'Replace');
+        s.getFooter('primary').insertOoxml(
+          isBrief ? mkBriefFtrPkg() : mkFtrPkg(dept, isQuer, isExtern), 'Replace');
+        ctx.document.body.insertOoxml(setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, false), 'Replace');
         if(combinedPkg){
           ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
         }
