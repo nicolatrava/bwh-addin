@@ -91,8 +91,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 
 <div class="top">
   <h1>BWH Dokumentenvorlagen</h1>
-  <a class="top-help" href="https://bwhb.sharepoint.com/:v:/r/sites/QMS/Management/B08/Dokumente%20Vorlagenset/Anleitung%20BWH%20Addin.mp4?csf=1&web=1&e=8WMhH4" target="_blank">Anleitung</a>
-  <a class="top-help" href="https://bwhb.sharepoint.com/:w:/r/sites/QMS/Management/B08/Konzepte%20und%20Leitf%C3%A4den/LF%20Dateitypen.docx?d=w8a17d7404f48421283a8405ffc8254b6&csf=1&web=1&e=4n2kyT" target="_blank">Dateiregeln</a>
+  <div style="display:flex;gap:6px">
+    <a class="top-help" href="https://bwhb.sharepoint.com/:v:/r/sites/QMS/Management/B08/Dokumente%20Vorlagenset/Anleitung%20BWH%20Addin.mp4?csf=1&web=1&e=8WMhH4" target="_blank">Anleitung</a>
+    <a class="top-help" href="https://bwhb.sharepoint.com/:w:/r/sites/QMS/Management/B08/Konzepte%20und%20Leitf%C3%A4den/LF%20Dateitypen.docx?d=w8a17d7404f48421283a8405ffc8254b6&csf=1&web=1&e=4n2kyT" target="_blank">Dateiregeln</a>
+  </div>
 </div>
 
 <div class="scroll">
@@ -236,25 +238,41 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
         <label>E-Mail</label>
         <input type="text" id="brief-email" placeholder="z.B. m.muster@waisehuus.ch"/>
       </div>
+      <div class="field">
+        <label>Abteilung</label>
+        <input type="text" id="brief-abteilung" placeholder="z.B. Kita St. Jakob"/>
+      </div>
+      <div class="field">
+        <label>Strasse</label>
+        <input type="text" id="brief-strasse" placeholder="z.B. Theodorskirchplatz 7"/>
+      </div>
+      <div class="field">
+        <label>PLZ</label>
+        <input type="text" id="brief-plz" placeholder="z.B. 4058"/>
+      </div>
+      <div class="field">
+        <label>Ort</label>
+        <input type="text" id="brief-ort" placeholder="Basel"/>
+      </div>
       <button type="button" class="ad-btn" id="ad-load" onclick="loadFromActiveDirectory(true)">Aus Active Directory laden</button>
       <div class="profile-hint" id="profile-hint">Wird nach dem ersten Anwenden automatisch gespeichert.</div>
     </div>
   </div>
   <div class="sep"></div>
 
-</div><!-- /scroll -->
-
-<div class="step" style="margin-top:14px;margin-bottom:70px">
+  <div class="step" style="margin-top:14px">
     <div class="step-title"><span class="sn">6</span>Aktualisieren</div>
     <button type="button" class="ad-btn" onclick="updateFooterMeta()">Fusszeile aktualisieren (Name &amp; Datum)</button>
     <button type="button" class="ad-btn" onclick="updateTOC()">Inhaltsverzeichnis / Felder aktualisieren</button>
     <div class="profile-hint">Aktualisiert Dokumentname und Datum in der Fusszeile bzw. alle Felder im Dokument &ndash; ohne sonst etwas zu ver&auml;ndern. Version und K&uuml;rzel bleiben stehen.</div>
   </div>
 
+</div><!-- /scroll -->
+
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 33</div>
+  <div class="build">Build 34</div>
 </div>
 
 <script>
@@ -855,9 +873,12 @@ function buildFtrBody(dept, isQuer, verDatum, kuerzel){
 
   /* Adresszeile wie Musterdokument: BWH Basel • Strasse • PLZ Basel • Web
      (ohne Abteilungsnamen). */
-  var addr = ['Bürgerliches Waisenhaus Basel', dept.street, dept.plz+' Basel', 'www.waisehuus.ch'].join(' • ');
+  var addrParts = ['Bürgerliches Waisenhaus Basel'];
+  if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
+  addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
+  var addr = addrParts.join(' • ');
   var line2 =
-    '<w:p><w:pPr><w:ind w:left="1134"/>'+ftrSpc+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
+    '<w:p><w:pPr>'+ftrSpc+'<w:ind w:left="1134"/>'+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
     '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
     '<w:t>'+esc(addr)+'</w:t></w:r>'+
     '</w:p>';
@@ -891,8 +912,8 @@ function buildFtrBody(dept, isQuer, verDatum, kuerzel){
   /* Hintergrund-Balken mit BG-Basel-Logo. */
   var bgPara =
     '<w:p>'+
-      '<w:pPr><w:tabs><w:tab w:val="right" w:pos="9071"/></w:tabs>'+
-      '<w:rPr><w:sz w:val="4"/><w:szCs w:val="4"/></w:rPr></w:pPr>'+
+      '<w:pPr><w:spacing w:before="0" w:after="0" w:line="14" w:lineRule="exact"/>'+
+      '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr>'+
       '<w:r><w:rPr><w:noProof/></w:rPr>'+
         ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+
       '</w:r>'+
@@ -913,7 +934,7 @@ function mkFtrMetaFullPkg(dept, verDatum, kuerzel){
   if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
   addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
   var addrLine =
-    '<w:p><w:pPr><w:ind w:left="1134"/>'+sp+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
+    '<w:p><w:pPr>'+sp+'<w:ind w:left="1134"/>'+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
     '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
     '<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r></w:p>';
   return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(true, verDatum, kuerzel) + addrLine) + PKG_CLOSE();
@@ -1027,6 +1048,10 @@ function apply(){
   var briefFunktion = document.getElementById('brief-funktion').value.trim();
   var briefTelefon  = document.getElementById('brief-telefon').value.trim();
   var briefEmail    = document.getElementById('brief-email').value.trim();
+  var briefAbteilung = document.getElementById('brief-abteilung').value.trim();
+  var briefStrasse   = document.getElementById('brief-strasse').value.trim();
+  var briefPlz       = document.getElementById('brief-plz').value.trim();
+  var briefOrt       = document.getElementById('brief-ort').value.trim();
   var hdrPkg = isBrief
     ? mkBriefHdrPkg(dept.name)
     : mkHdrPkg(isQuer, isExtern, isBrief, pname, aort, dept.name);
@@ -1039,11 +1064,11 @@ function apply(){
        the person from the form fields. */
     /* Absenderblock: persönliche AD-Daten (Abteilung/Strasse/PLZ/Ort der
        Person, z.B. Kita St. Jakob) haben Vorrang vor der Karten-Adresse. */
-    var briefDept = _adOrg.abteilung || ((dept.name === 'Allgemeine Vorlage') ? '' : dept.name);
+    var briefDept = briefAbteilung || _adOrg.abteilung || ((dept.name === 'Allgemeine Vorlage') ? '' : dept.name);
     briefBody = briefBody.replace(/\[Abteilung\]/g, esc(briefDept));
-    briefBody = briefBody.replace(/\[Strasse\]/g, esc(_adOrg.strasse || dept.street || ''));
-    briefBody = briefBody.replace(/\[PLZ\]/g, esc(_adOrg.plz || dept.plz || ''));
-    briefBody = briefBody.replace(/\[Ort\]/g, esc(_adOrg.ort || 'Basel'));
+    briefBody = briefBody.replace(/\[Strasse\]/g, esc(briefStrasse || _adOrg.strasse || dept.street || ''));
+    briefBody = briefBody.replace(/\[PLZ\]/g, esc(briefPlz || _adOrg.plz || dept.plz || ''));
+    briefBody = briefBody.replace(/\[Ort\]/g, esc(briefOrt || _adOrg.ort || 'Basel'));
     /* [Vorname]/[Funktion] kommen 3x vor: Absenderbox rechts, Unterschrift
        links, zweite Unterschrift. Die zweite Unterschrift bleibt LEER (für
        eine allfällige zweite Person) – sonst steht dieselbe Person doppelt da. */
@@ -1119,15 +1144,18 @@ function apply(){
                     : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kuerzel)
                                 : mkFtrMetaFullPkg(dept, verDatum, kuerzel)),
             'Replace');
-          /* Inhalt MIT Rand/Ausrichtung als EIN Replace einfügen. Bewusst KEIN
-             Einspielen der Formatvorlagen ohne gewählten Inhalt: beide Varianten
-             (Body-Ersatz Build 27, Träger-Paket Build 29) führten zu Fehlern.
-             Die WH-Vorlagen kommen mit dem Musterinhalt – langfristig gehören
-             sie in die leere CSF-Standardvorlage. */
-          var contentPkg = briefPkg || combinedPkg;
+          /* Bestehender Inhalt bleibt IMMER erhalten: Body wird mit dem eigenen
+             Inhalt (plus Rand/Ausrichtung) ersetzt, Musterinhalt/Brief werden
+             VORNE eingefügt statt zu ersetzen. */
           ctx.document.body.insertOoxml(
-            setPageOrientation(contentPkg || bodyOoxmlResult.value, isQuer, isBrief, false),
+            setPageOrientation(bodyOoxmlResult.value, isQuer, isBrief, false),
             'Replace');
+          if(combinedPkg){
+            ctx.document.body.insertOoxml(combinedPkg, Word.InsertLocation.start);
+          }
+          if(briefPkg){
+            ctx.document.body.insertOoxml(briefPkg, Word.InsertLocation.start);
+          }
           return ctx.sync();
         });
       }).then(function(){
@@ -1143,7 +1171,7 @@ function apply(){
         /* Remember personal data for this user across documents (macro replacement) */
         try {
           if(briefName || briefFunktion || briefTelefon || briefEmail){
-            localStorage.setItem('bwhBriefPersonal', JSON.stringify({name:briefName, funktion:briefFunktion, telefon:briefTelefon, email:briefEmail, abteilung:_adOrg.abteilung||'', strasse:_adOrg.strasse||'', plz:_adOrg.plz||'', ort:_adOrg.ort||''}));
+            localStorage.setItem('bwhBriefPersonal', JSON.stringify({name:briefName, funktion:briefFunktion, telefon:briefTelefon, email:briefEmail, abteilung:briefAbteilung||_adOrg.abteilung||'', strasse:briefStrasse||_adOrg.strasse||'', plz:briefPlz||_adOrg.plz||'', ort:briefOrt||_adOrg.ort||''}));
             showProfileSaved();
           }
         } catch(e){}
@@ -1216,7 +1244,13 @@ function updateFooterMeta(){
           'Replace');
         return ctx.sync();
       });
-    }).then(function(){ showStatus('✓ Fusszeile aktualisiert (Name + Datum)', 'ok'); });
+    }).then(function(){
+      if(docName() === 'Dokument'){
+        showStatus('Fusszeile aktualisiert – Dokument hat noch keinen Namen (zuerst speichern)', 'ok');
+      } else {
+        showStatus('✓ Fusszeile aktualisiert: '+docName(), 'ok');
+      }
+    });
   }).catch(function(e){ showStatus('Fehler: '+(e.message||String(e)), 'err'); });
 }
 
@@ -1299,6 +1333,10 @@ function fillBriefFromAD(me){
   set('brief-funktion', me.jobTitle || '');
   set('brief-telefon', tel);
   set('brief-email', mail);
+  set('brief-abteilung', me.department || '');
+  set('brief-strasse', me.streetAddress || '');
+  set('brief-plz', me.postalCode || '');
+  set('brief-ort', me.city || '');
   _adOrg = {
     abteilung: me.department || '',
     strasse:   me.streetAddress || '',
@@ -1362,6 +1400,10 @@ Office.onReady(function(info){
       if(personal.email)    document.getElementById('brief-email').value    = personal.email;
       _adOrg = {abteilung: personal.abteilung||'', strasse: personal.strasse||'',
                 plz: personal.plz||'', ort: personal.ort||''};
+      if(personal.abteilung) document.getElementById('brief-abteilung').value = personal.abteilung;
+      if(personal.strasse)   document.getElementById('brief-strasse').value   = personal.strasse;
+      if(personal.plz)       document.getElementById('brief-plz').value       = personal.plz;
+      if(personal.ort)       document.getElementById('brief-ort').value       = personal.ort;
       showProfileSaved();
     }
   } catch(e){}
