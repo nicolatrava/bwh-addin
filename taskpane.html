@@ -232,7 +232,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 2026-07-13 · 28 (IVZ unnummeriert)</div>
+  <div class="build">Build 2026-07-13 · 29 (Schreiben-Fix, Vorlagen separat)</div>
 </div>
 
 <script>
@@ -1060,20 +1060,22 @@ function apply(){
            separat ein, wodurch die Musterseiten den Standardrand behielten und
            der Text am Logo klebte). */
         var contentPkg = briefPkg || combinedPkg;
-        /* LEERES Dokument ohne gewählten Inhalt: frisches Paket mit den
-           BWH-Formatvorlagen + Nummerierung einsetzen. Nur so stehen die
-           WH-Vorlagen in der Galerie zur Verfügung und die Ränder greifen –
-           auch wenn nur Kopf-/Fusszeile angewendet wird. Dokumente mit
-           bestehendem Text bleiben unangetastet (kein Datenverlust). */
-        if(!contentPkg && !((bodyProxy.text || '').trim())){
-          contentPkg = PKG_OPEN() + PKG_ROOT_RELS() + PKG_CONTENT_RELS([]) +
-            PKG_STYLES() + PKG_NUMBERING() +
-            PKG_DOCUMENT('<w:p><w:pPr><w:pStyle w:val="WHStandard"/></w:pPr></w:p>') +
-            PKG_CLOSE();
-        }
         ctx.document.body.insertOoxml(
           setPageOrientation(contentPkg || bodyOoxmlResult.value, isQuer, isBrief, false),
           'Replace');
+        /* Ohne gewählten Inhalt auf leerem Dokument: BWH-Formatvorlagen +
+           Nummerierung über ein separat eingefügtes Träger-Paket in die
+           Galerie bringen (ein leerer WHStandard-Absatz am Anfang). Bewusst
+           NICHT als Body-Ersatz – das machte das Dokument unbeschreibbar –
+           sondern als zusätzliches Einfügen, derselbe seit langem bewährte
+           Weg wie beim Musterinhalt. */
+        if(!contentPkg && !((bodyProxy.text || '').trim())){
+          var stylesCarrier = PKG_OPEN() + PKG_ROOT_RELS() + PKG_CONTENT_RELS([]) +
+            PKG_STYLES() + PKG_NUMBERING() +
+            PKG_DOCUMENT('<w:p><w:pPr><w:pStyle w:val="WHStandard"/></w:pPr></w:p>') +
+            PKG_CLOSE();
+          ctx.document.body.insertOoxml(stylesCarrier, Word.InsertLocation.start);
+        }
         return ctx.sync();
       }).then(function(){
         /* NOTE: We intentionally do NOT call ctx.document.save() here.
