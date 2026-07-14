@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 36</div>
+  <div class="build">Build 37</div>
 </div>
 
 <script>
@@ -585,6 +585,10 @@ function ftrBgAnchor(ridVal, docprId, isQuer){
   } else {
     posH=-723900; posV=-335915; cx=7556400; cy=824400;
   }
+  /* Anker sitzt neu in der Adresszeile (eine Zeile höher als der frühere
+     Träger-Absatz) – Versatz kompensieren, damit das Logo optisch gleich
+     bleibt. */
+  posV += 129000;
   return '<w:drawing>' +
     '<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" ' +
     'relativeHeight="251661312" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">' +
@@ -884,7 +888,7 @@ function buildFtrMeta(full, verDatum, kuerzel){
 
 /* Gemeinsame Fusszeilen-Zeilen (Intern und Extern IDENTISCH):
    Meta-Zeile + Adresszeile mit Abteilung. */
-function ftrLines(dept, verDatum, kuerzel){
+function ftrLines(dept, verDatum, kuerzel, extraRun){
   var C='A74E57', S=16, sp='<w:spacing w:before="0" w:after="0"/>';
   var addrParts = ['Bürgerliches Waisenhaus Basel'];
   if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
@@ -892,7 +896,7 @@ function ftrLines(dept, verDatum, kuerzel){
   var addrLine =
     '<w:p><w:pPr>'+sp+'<w:ind w:left="1134"/><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
     '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
-    '<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r></w:p>';
+    '<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r>'+(extraRun||'')+'</w:p>';
   return buildFtrMeta(true, verDatum, kuerzel) + addrLine;
 }
 
@@ -909,15 +913,12 @@ function mkFtrFullPkg(dept, isQuer, verDatum, kuerzel){
   var ftrDocprId = (n % 100) + 2;
   var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
   var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
-  var bgPara =
-    '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="14" w:lineRule="exact"/>'+
-    '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr>'+
-    '<w:r><w:rPr><w:noProof/></w:rPr>'+ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+'</w:r></w:p>';
+  var logoRun = '<w:r><w:rPr><w:noProof/></w:rPr>'+ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+'</w:r>';
   return PKG_OPEN() +
     PKG_ROOT_RELS() +
     PKG_IMG_RELS([{id: ftrRid, target: ftrFn}]) +
     PKG_IMG(ftrFn, 'image/x-emf', ftrB64) +
-    PKG_DOCUMENT(ftrLines(dept, verDatum, kuerzel) + bgPara) +
+    PKG_DOCUMENT(ftrLines(dept, verDatum, kuerzel, logoRun)) +
     PKG_CLOSE();
 }
 
