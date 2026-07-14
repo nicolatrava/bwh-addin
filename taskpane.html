@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 35</div>
+  <div class="build">Build 36</div>
 </div>
 
 <script>
@@ -1112,12 +1112,17 @@ function apply(){
              Seite» nicht zuverlässig an, darum bewusst einheitlich):
              - Intern: Meta + Version + Kürzel + Adresszeile
              - Extern: dasselbe + BG-Logo */
-          s.getHeader('primary').insertOoxml(hdrPkg, 'Replace');
-          s.getFooter('primary').insertOoxml(
-            isBrief ? mkBriefFtrPkg()
-                    : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kuerzel)
-                                : mkFtrMetaFullPkg(dept, verDatum, kuerzel)),
-            'Replace');
+          /* In ALLE Varianten schreiben (primary, firstPage, evenPages):
+             ältere Builds hinterliessen titlePg/even-Einstellungen in den
+             Dokumenten – Seite 1 zeigte dann eine eingefrorene alte
+             First-Page-Fusszeile, egal was in primary stand. */
+          var ftrPkgAll = isBrief ? mkBriefFtrPkg()
+                        : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kuerzel)
+                                    : mkFtrMetaFullPkg(dept, verDatum, kuerzel));
+          ['primary','firstPage','evenPages'].forEach(function(kind){
+            s.getHeader(kind).insertOoxml(hdrPkg, 'Replace');
+            s.getFooter(kind).insertOoxml(ftrPkgAll, 'Replace');
+          });
           /* Bestehender Inhalt bleibt IMMER erhalten: Body wird mit dem eigenen
              Inhalt (plus Rand/Ausrichtung) ersetzt, Musterinhalt/Brief werden
              VORNE eingefügt statt zu ersetzen. */
@@ -1212,11 +1217,12 @@ function updateFooterMeta(){
         var km = t.match(/Kürzel:\s*([^•\r\n]*)/);
         var verDatum = vm ? vm[1].trim() : '';
         var kz = kzUI || (km ? km[1].trim() : '');
-        s.getFooter('primary').insertOoxml(
-          isBrief ? mkBriefFtrPkg()
-                  : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kz)
-                              : mkFtrMetaFullPkg(dept, verDatum, kz)),
-          'Replace');
+        var ftrPkgAll = isBrief ? mkBriefFtrPkg()
+                      : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kz)
+                                  : mkFtrMetaFullPkg(dept, verDatum, kz));
+        ['primary','firstPage','evenPages'].forEach(function(kind){
+          s.getFooter(kind).insertOoxml(ftrPkgAll, 'Replace');
+        });
         return ctx.sync();
       });
     }).then(function(){
