@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 34</div>
+  <div class="build">Build 35</div>
 </div>
 
 <script>
@@ -822,7 +822,29 @@ function mkBriefFtrPkg(){
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer OOXML builder
    ═══════════════════════════════════════════════════════════════════════════ */
+var _docFileName = '';
+/* Dateiname zuverlässig holen: getFilePropertiesAsync funktioniert auch in
+   Word Online (document.url ist dort oft leer). Ergebnis wird gecacht. */
+function refreshDocName(cb){
+  var done = false;
+  function finish(){ if(!done){ done = true; if(cb) cb(); } }
+  try{
+    Office.context.document.getFilePropertiesAsync(function(res){
+      try{
+        var u = (res && res.value && res.value.url) || '';
+        if(u){
+          var seg = u.split(/[\\\/]/).pop().split('?')[0];
+          _docFileName = decodeURIComponent(seg) || '';
+        }
+      }catch(e){}
+      finish();
+    });
+    /* Sicherheitsnetz: nie länger als 2s auf die Antwort warten */
+    setTimeout(finish, 2000);
+  }catch(e){ finish(); }
+}
 function docName(){
+  if(_docFileName) return _docFileName;
   try{
     var u = (Office.context && Office.context.document && Office.context.document.url) || '';
     if(!u) return 'Dokument';
@@ -859,67 +881,44 @@ function buildFtrMeta(full, verDatum, kuerzel){
   return '<w:p>'+pp+meta+'</w:p>';
 }
 
-function buildFtrBody(dept, isQuer, verDatum, kuerzel){
-  var n = _applyN;
-  var ftrRid = 'rIdFtrBg'+n;
-  var ftrDocprId = (n % 100) + 2;
 
-  var lW = isQuer ? 12616 : 7513;
-  var rW = isQuer ? 1985  : 2139;
-  var totalW = isQuer ? 14601 : 9652;
-
-  var ftrSpc = '<w:spacing w:before="0" w:after="0"/>';
-  var line1 = buildFtrMeta(true, verDatum, kuerzel);
-
-  /* Adresszeile wie Musterdokument: BWH Basel • Strasse • PLZ Basel • Web
-     (ohne Abteilungsnamen). */
+/* Gemeinsame Fusszeilen-Zeilen (Intern und Extern IDENTISCH):
+   Meta-Zeile + Adresszeile mit Abteilung. */
+function ftrLines(dept, verDatum, kuerzel){
+  var C='A74E57', S=16, sp='<w:spacing w:before="0" w:after="0"/>';
   var addrParts = ['Bürgerliches Waisenhaus Basel'];
   if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
   addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
-  var addr = addrParts.join(' • ');
-  var line2 =
-    '<w:p><w:pPr>'+ftrSpc+'<w:ind w:left="1134"/>'+'<w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/></w:rPr></w:pPr>'+
-    '<w:r><w:rPr><w:color w:val="A74E57"/><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'+
-    '<w:t>'+esc(addr)+'</w:t></w:r>'+
-    '</w:p>';
+  var addrLine =
+    '<w:p><w:pPr>'+sp+'<w:ind w:left="1134"/><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
+    '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
+    '<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r></w:p>';
+  return buildFtrMeta(true, verDatum, kuerzel) + addrLine;
+}
 
-  var rightCell = '<w:p><w:pPr>'+ftrSpc+'<w:pStyle w:val="WHBox"/><w:jc w:val="right"/></w:pPr></w:p>';
+/* Intern: nur die Zeilen. */
+function mkFtrMetaFullPkg(dept, verDatum, kuerzel){
+  return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(ftrLines(dept, verDatum, kuerzel)) + PKG_CLOSE();
+}
 
-  var nb =
-    '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
-    '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
-    '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
-    '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
-    '<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
-    '<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>';
-
-  var tbl =
-    '<w:tbl>'+
-      '<w:tblPr>'+
-        '<w:tblW w:w="'+totalW+'" w:type="dxa"/>'+
-        '<w:tblLayout w:type="fixed"/>'+
-        '<w:tblBorders>'+nb+'</w:tblBorders>'+
-        '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>'+
-        '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar>'+
-      '</w:tblPr>'+
-      '<w:tblGrid><w:gridCol w:w="'+lW+'"/><w:gridCol w:w="'+rW+'"/></w:tblGrid>'+
-      '<w:tr>'+
-        '<w:tc><w:tcPr><w:tcW w:w="'+lW+'" w:type="dxa"/></w:tcPr>'+line1+line2+'</w:tc>'+
-        '<w:tc><w:tcPr><w:tcW w:w="'+rW+'" w:type="dxa"/></w:tcPr>'+rightCell+'</w:tc>'+
-      '</w:tr>'+
-    '</w:tbl>';
-
-  /* Hintergrund-Balken mit BG-Basel-Logo. */
+/* Extern: exakt dieselben Zeilen + schwebendes BG-Basel-Logo (der winzige
+   Träger-Absatz hat 0.25mm Höhe und verschiebt nichts). */
+function mkFtrFullPkg(dept, isQuer, verDatum, kuerzel){
+  var n = _applyN;
+  var ftrRid = 'rIdFtrBg'+n;
+  var ftrDocprId = (n % 100) + 2;
+  var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
+  var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
   var bgPara =
-    '<w:p>'+
-      '<w:pPr><w:spacing w:before="0" w:after="0" w:line="14" w:lineRule="exact"/>'+
-      '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr>'+
-      '<w:r><w:rPr><w:noProof/></w:rPr>'+
-        ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+
-      '</w:r>'+
-    '</w:p>';
-
-  return {body: tbl + bgPara, ftrRid: ftrRid, ftrDocprId: ftrDocprId};
+    '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="14" w:lineRule="exact"/>'+
+    '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr>'+
+    '<w:r><w:rPr><w:noProof/></w:rPr>'+ftrBgAnchor(ftrRid, ftrDocprId, isQuer)+'</w:r></w:p>';
+  return PKG_OPEN() +
+    PKG_ROOT_RELS() +
+    PKG_IMG_RELS([{id: ftrRid, target: ftrFn}]) +
+    PKG_IMG(ftrFn, 'image/x-emf', ftrB64) +
+    PKG_DOCUMENT(ftrLines(dept, verDatum, kuerzel) + bgPara) +
+    PKG_CLOSE();
 }
 
 /* Einfache Fusszeile: Seite • von • Dateiname • Datum. */
@@ -927,32 +926,7 @@ function mkFtrSimplePkg(){
   return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(false)) + PKG_CLOSE();
 }
 
-/* Intern: Meta mit Versionierung + Adresszeile (ohne BG-Logo). */
-function mkFtrMetaFullPkg(dept, verDatum, kuerzel){
-  var C='A74E57', S=16, sp='<w:spacing w:before="0" w:after="0"/>';
-  var addrParts = ['Bürgerliches Waisenhaus Basel'];
-  if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
-  addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
-  var addrLine =
-    '<w:p><w:pPr>'+sp+'<w:ind w:left="1134"/>'+'<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
-    '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
-    '<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r></w:p>';
-  return PKG_OPEN() + PKG_ROOT_RELS() + PKG_DOCUMENT(buildFtrMeta(true, verDatum, kuerzel) + addrLine) + PKG_CLOSE();
-}
 
-/* Volle Fusszeile (extern Seite 1): Meta + Adresse + BG-Logo. */
-function mkFtrFullPkg(dept, isQuer, verDatum, kuerzel){
-  var n = _applyN;
-  var ftrFn = isQuer ? 'ftrbg_quer_'+n+'.emf' : 'ftrbg_hoch_'+n+'.emf';
-  var ftrB64 = isQuer ? FTRBG_EMF_QUER_B64 : FTRBG_EMF_B64;
-  var full = buildFtrBody(dept, isQuer, verDatum, kuerzel);
-  return PKG_OPEN() +
-    PKG_ROOT_RELS() +
-    PKG_IMG_RELS([{id: full.ftrRid, target: ftrFn}]) +
-    PKG_IMG(ftrFn, 'image/x-emf', ftrB64) +
-    PKG_DOCUMENT(full.body) +
-    PKG_CLOSE();
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Content package builder
@@ -1119,7 +1093,7 @@ function apply(){
     return result;
   }
 
-  setTimeout(function(){
+  refreshDocName(function(){
     Word.run(function(ctx){
       var sects = ctx.document.sections;
       sects.load('items');
@@ -1187,7 +1161,7 @@ function apply(){
       btn.disabled = false;
       btn.textContent = 'Auf Dokument anwenden';
     });
-  }, 50);
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1223,6 +1197,7 @@ function updateFooterMeta(){
   var isQuer = (fmt==='quer'), isExtern = (typ==='extern'), isBrief = (typ==='brief');
   var kzUI = document.getElementById('kuerzel').value.trim();
   _applyN++;
+  refreshDocName(function(){
   Word.run(function(ctx){
     var sects = ctx.document.sections;
     sects.load('items');
@@ -1252,6 +1227,7 @@ function updateFooterMeta(){
       }
     });
   }).catch(function(e){ showStatus('Fehler: '+(e.message||String(e)), 'err'); });
+  });
 }
 
 function updateTOC(){
@@ -1384,6 +1360,7 @@ Office.onReady(function(info){
     document.body.innerHTML = '<div style="padding:24px;color:#c62828">Nur in Microsoft Word verfügbar.</div>';
     return;
   }
+  refreshDocName();
   setTyp('intern');
   setFmt('hoch');
   inhaltSet={}; ['muster','ivz','titel'].forEach(function(k){document.getElementById('btn-'+k).className='tbtn';});
