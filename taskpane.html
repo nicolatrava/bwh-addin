@@ -245,7 +245,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 31</div>
+  <div class="build">Build 32</div>
 </div>
 
 <script>
@@ -1021,11 +1021,13 @@ function apply(){
     var briefBody = BODY_BRIEF;
     /* Replace placeholders. Sender address comes from the chosen department,
        the person from the form fields. */
-    var briefDept = (dept.name === 'Allgemeine Vorlage') ? '' : dept.name;
+    /* Absenderblock: persönliche AD-Daten (Abteilung/Strasse/PLZ/Ort der
+       Person, z.B. Kita St. Jakob) haben Vorrang vor der Karten-Adresse. */
+    var briefDept = _adOrg.abteilung || ((dept.name === 'Allgemeine Vorlage') ? '' : dept.name);
     briefBody = briefBody.replace(/\[Abteilung\]/g, esc(briefDept));
-    briefBody = briefBody.replace(/\[Strasse\]/g, esc(dept.street||''));
-    briefBody = briefBody.replace(/\[PLZ\]/g, esc(dept.plz||''));
-    briefBody = briefBody.replace(/\[Ort\]/g, 'Basel');
+    briefBody = briefBody.replace(/\[Strasse\]/g, esc(_adOrg.strasse || dept.street || ''));
+    briefBody = briefBody.replace(/\[PLZ\]/g, esc(_adOrg.plz || dept.plz || ''));
+    briefBody = briefBody.replace(/\[Ort\]/g, esc(_adOrg.ort || 'Basel'));
     /* [Vorname]/[Funktion] kommen 3x vor: Absenderbox rechts, Unterschrift
        links, zweite Unterschrift. Die zweite Unterschrift bleibt LEER (für
        eine allfällige zweite Person) – sonst steht dieselbe Person doppelt da. */
@@ -1125,7 +1127,7 @@ function apply(){
         /* Remember personal data for this user across documents (macro replacement) */
         try {
           if(briefName || briefFunktion || briefTelefon || briefEmail){
-            localStorage.setItem('bwhBriefPersonal', JSON.stringify({name:briefName, funktion:briefFunktion, telefon:briefTelefon, email:briefEmail}));
+            localStorage.setItem('bwhBriefPersonal', JSON.stringify({name:briefName, funktion:briefFunktion, telefon:briefTelefon, email:briefEmail, abteilung:_adOrg.abteilung||'', strasse:_adOrg.strasse||'', plz:_adOrg.plz||'', ort:_adOrg.ort||''}));
             showProfileSaved();
           }
         } catch(e){}
@@ -1184,6 +1186,10 @@ var AAD_CLIENT_ID = 'a5e6a291-66c5-41cb-aae7-47fff5e1a869';
 var AAD_AUTHORITY = 'https://login.microsoftonline.com/waisehuus.ch';
 var AAD_REDIRECT  = 'https://nicolatrava.github.io/bwh-addin/taskpane.html';
 var _msalPromise = null;
+/* Organisations-/Adressdaten der Person aus dem AD (Abteilung, Strasse,
+   PLZ, Ort). Werden im Brief-Absenderblock bevorzugt; Fallback ist die
+   Adresse der gewählten Abteilungs-Karte. */
+var _adOrg = {};
 
 function getMsalAsync(){
   if(_msalPromise) return _msalPromise;
@@ -1223,9 +1229,16 @@ function fillBriefFromAD(me){
   set('brief-funktion', me.jobTitle || '');
   set('brief-telefon', tel);
   set('brief-email', mail);
+  _adOrg = {
+    abteilung: me.department || '',
+    strasse:   me.streetAddress || '',
+    plz:       me.postalCode || '',
+    ort:       me.city || ''
+  };
   try{
     localStorage.setItem('bwhBriefPersonal', JSON.stringify({
-      name: name, funktion: me.jobTitle || '', telefon: tel, email: mail
+      name: name, funktion: me.jobTitle || '', telefon: tel, email: mail,
+      abteilung: _adOrg.abteilung, strasse: _adOrg.strasse, plz: _adOrg.plz, ort: _adOrg.ort
     }));
   }catch(e){}
   showProfileSaved();
@@ -1238,7 +1251,7 @@ function loadFromActiveDirectory(interactive){
     if(!pca) throw new Error('MSAL nicht verfügbar');
     return adAcquireToken(pca, interactive);
   }).then(function(res){
-    return fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,givenName,surname,jobTitle,mobilePhone,businessPhones,mail,userPrincipalName', {
+    return fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,givenName,surname,jobTitle,mobilePhone,businessPhones,mail,userPrincipalName,department,streetAddress,city,postalCode', {
       headers: { Authorization: 'Bearer ' + res.accessToken }
     });
   }).then(function(r){ return r.json(); }).then(function(me){
@@ -1277,6 +1290,8 @@ Office.onReady(function(info){
       if(personal.funktion) document.getElementById('brief-funktion').value = personal.funktion;
       if(personal.telefon)  document.getElementById('brief-telefon').value  = personal.telefon;
       if(personal.email)    document.getElementById('brief-email').value    = personal.email;
+      _adOrg = {abteilung: personal.abteilung||'', strasse: personal.strasse||'',
+                plz: personal.plz||'', ort: personal.ort||''};
       showProfileSaved();
     }
   } catch(e){}
