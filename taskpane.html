@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 38</div>
+  <div class="build">Build 39</div>
 </div>
 
 <script>
@@ -874,7 +874,7 @@ function buildFtrMeta(full, verDatum, kuerzel){
   var pp='<w:pPr><w:tabs><w:tab w:val="left" w:pos="567"/></w:tabs>'+
          '<w:spacing w:before="240" w:after="0"/>'+
          '<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>';
-  var ver = (full && verDatum) ? ' • Version: '+verDatum : '';
+  var ver = full ? ' • Version: '+(verDatum||'') : '';
   var kzl = (full && kuerzel)  ? ' • Kürzel: '+kuerzel   : '';
   var meta =
     fld('PAGE \\* Arabic \\* MERGEFORMAT','1',C,S) + txt(' • ',C,S,false) +
@@ -894,9 +894,10 @@ function ftrLines(dept, verDatum, kuerzel, extraRun){
   if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
   addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
   var addrLine =
-    '<w:p><w:pPr>'+sp+'<w:ind w:left="567"/><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
+    '<w:p><w:pPr><w:tabs><w:tab w:val="left" w:pos="567"/></w:tabs>'+sp+
+    '<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
     '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
-    '<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r>'+(extraRun||'')+'</w:p>';
+    '<w:tab/><w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r>'+(extraRun||'')+'</w:p>';
   return buildFtrMeta(true, verDatum, kuerzel) + addrLine;
 }
 
