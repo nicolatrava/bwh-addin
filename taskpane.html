@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 39</div>
+  <div class="build">Build 40</div>
 </div>
 
 <script>
@@ -585,10 +585,7 @@ function ftrBgAnchor(ridVal, docprId, isQuer){
   } else {
     posH=-723900; posV=-335915; cx=7556400; cy=824400;
   }
-  /* Anker sitzt neu in der Adresszeile (eine Zeile höher als der frühere
-     Träger-Absatz) – Versatz kompensieren, damit das Logo optisch gleich
-     bleibt. */
-  posV += 129000;
+
   return '<w:drawing>' +
     '<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" ' +
     'relativeHeight="251661312" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">' +
@@ -889,16 +886,48 @@ function buildFtrMeta(full, verDatum, kuerzel){
 /* Gemeinsame Fusszeilen-Zeilen (Intern und Extern IDENTISCH):
    Meta-Zeile + Adresszeile mit Abteilung. */
 function ftrLines(dept, verDatum, kuerzel, extraRun){
-  var C='A74E57', S=16, sp='<w:spacing w:before="0" w:after="0"/>';
+  /* Unsichtbare Tabelle mit fixen Spalten: Spalte 1 (1cm) Seitenzahlen,
+     Spalte 2 Dokumentname/Datum bzw. Adresse. Tab- und Einzug-Rendering in
+     Fusszeilen erwies sich als unzuverlässig – Spaltenbreiten sind exakt.
+     Der Mini-Absatz nach der Tabelle (0.25mm, von Word ohnehin verlangt)
+     trägt bei Extern den schwebenden BG-Logo-Anker. */
+  var C='A74E57', S=16;
+  var rp='<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>';
+  var prTop='<w:pPr><w:spacing w:before="240" w:after="0"/><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>';
+  var pr0='<w:pPr><w:spacing w:before="0" w:after="0"/><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>';
   var addrParts = ['Bürgerliches Waisenhaus Basel'];
   if(dept.name && dept.name !== 'Allgemeine Vorlage') addrParts.push(dept.name);
   addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
-  var addrLine =
-    '<w:p><w:pPr><w:tabs><w:tab w:val="left" w:pos="567"/></w:tabs>'+sp+
-    '<w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/></w:rPr></w:pPr>'+
-    '<w:r><w:rPr><w:color w:val="'+C+'"/><w:sz w:val="'+S+'"/><w:szCs w:val="'+S+'"/></w:rPr>'+
-    '<w:tab/><w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r>'+(extraRun||'')+'</w:p>';
-  return buildFtrMeta(true, verDatum, kuerzel) + addrLine;
+  var pages = fld('PAGE \\* Arabic \\* MERGEFORMAT','1',C,S) + txt(' • ',C,S,false) +
+              fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1',C,S);
+  var ver = ' • Version: '+(verDatum||'');
+  var kzl = kuerzel ? ' • Kürzel: '+kuerzel : '';
+  var nameLine = fld('FILENAME \\* MERGEFORMAT',docName(),C,S,true) +
+                 txt(' • '+ftrDatum()+ver+kzl, C, S, false);
+  var addrRun = '<w:r>'+rp+'<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r>';
+  var nb =
+    '<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>';
+  var c1=567, c2=9071;
+  function tc(w, inner){
+    return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+inner+'</w:tc>';
+  }
+  var tbl =
+    '<w:tbl><w:tblPr><w:tblW w:w="'+(c1+c2)+'" w:type="dxa"/>'+
+    '<w:tblLayout w:type="fixed"/><w:tblBorders>'+nb+'</w:tblBorders>'+
+    '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/>'+
+    '<w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar></w:tblPr>'+
+    '<w:tblGrid><w:gridCol w:w="'+c1+'"/><w:gridCol w:w="'+c2+'"/></w:tblGrid>'+
+    '<w:tr>'+tc(c1,'<w:p>'+prTop+pages+'</w:p>')+tc(c2,'<w:p>'+prTop+nameLine+'</w:p>')+'</w:tr>'+
+    '<w:tr>'+tc(c1,'<w:p>'+pr0+'</w:p>')+tc(c2,'<w:p>'+pr0+addrRun+'</w:p>')+'</w:tr>'+
+    '</w:tbl>'+
+    '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="14" w:lineRule="exact"/>'+
+    '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr>'+(extraRun||'')+'</w:p>';
+  return tbl;
 }
 
 /* Intern: nur die Zeilen. */
