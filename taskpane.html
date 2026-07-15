@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 40</div>
+  <div class="build">Build 41</div>
 </div>
 
 <script>
@@ -1136,8 +1136,11 @@ function apply(){
         var oldFtr = s.getFooter('primary');
         oldFtr.load('text');
         return ctx.sync().then(function(){
-          var vm = (oldFtr.text || '').match(/Version:\s*([^•\r\n]*)/);
-          var verDatum = neueVersion ? ftrDatum() : (vm ? vm[1].trim() : '');
+          /* Nur ein Datum als Version übernehmen – der Tabellen-Text der
+             Fusszeile hat keine Trennzeichen zwischen den Zellen, ein
+             offenes Regex fing sonst die Adresszeile ein. */
+          var vm = (oldFtr.text || '').match(/Version:\s*([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{2,4})?/);
+          var verDatum = neueVersion ? ftrDatum() : ((vm && vm[1]) ? vm[1] : '');
           /* Kopf-/Fusszeile im selben Batch setzen (so erscheinen sie zuverlässig).
              Eine Fusszeile für alle Seiten (Word Online zeigt eine «eigene erste
              Seite» nicht zuverlässig an, darum bewusst einheitlich):
@@ -1151,8 +1154,12 @@ function apply(){
                         : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kuerzel)
                                     : mkFtrMetaFullPkg(dept, verDatum, kuerzel));
           ['primary','firstPage','evenPages'].forEach(function(kind){
-            s.getHeader(kind).insertOoxml(hdrPkg, 'Replace');
-            s.getFooter(kind).insertOoxml(ftrPkgAll, 'Replace');
+            var hd = s.getHeader(kind), ft = s.getFooter(kind);
+            /* clear() zuerst: Replace in eine Tabellen-Fusszeile verschmilzt
+               die neue Tabelle sonst mit der alten (Zeilen häufen sich an). */
+            hd.clear(); ft.clear();
+            hd.insertOoxml(hdrPkg, 'Replace');
+            ft.insertOoxml(ftrPkgAll, 'Replace');
           });
           /* Bestehender Inhalt bleibt IMMER erhalten: Body wird mit dem eigenen
              Inhalt (plus Rand/Ausrichtung) ersetzt, Musterinhalt/Brief werden
@@ -1244,15 +1251,17 @@ function updateFooterMeta(){
       return ctx.sync().then(function(){
         /* Version NIE anfassen, Kürzel aus Feld oder bestehender Fusszeile. */
         var t = oldFtr.text || '';
-        var vm = t.match(/Version:\s*([^•\r\n]*)/);
-        var km = t.match(/Kürzel:\s*([^•\r\n]*)/);
-        var verDatum = vm ? vm[1].trim() : '';
-        var kz = kzUI || (km ? km[1].trim() : '');
+        var vm = t.match(/Version:\s*([0-9]{1,2}\.[0-9]{1,2}\.[0-9]{2,4})?/);
+        var km = t.match(/Kürzel:\s*([A-Za-zÄÖÜäöü0-9]{1,10})/);
+        var verDatum = (vm && vm[1]) ? vm[1] : '';
+        var kz = kzUI || (km ? km[1] : '');
         var ftrPkgAll = isBrief ? mkBriefFtrPkg()
                       : (isExtern ? mkFtrFullPkg(dept, isQuer, verDatum, kz)
                                   : mkFtrMetaFullPkg(dept, verDatum, kz));
         ['primary','firstPage','evenPages'].forEach(function(kind){
-          s.getFooter(kind).insertOoxml(ftrPkgAll, 'Replace');
+          var ft = s.getFooter(kind);
+          ft.clear();
+          ft.insertOoxml(ftrPkgAll, 'Replace');
         });
         return ctx.sync();
       });
