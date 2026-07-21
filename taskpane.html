@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 44</div>
+  <div class="build">Build 45</div>
 </div>
 
 <script>
@@ -901,7 +901,7 @@ function ftrLines(dept, verDatum, kuerzel, extraRun){
   var pages = fld('PAGE \\* Arabic \\* MERGEFORMAT','1',C,S) + txt(' • ',C,S,false) +
               fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1',C,S);
   var ver = ' • Version: '+(verDatum||'');
-  var kzl = kuerzel ? ' • Kürzel: '+kuerzel : '';
+  var kzl = kuerzel ? ' • '+kuerzel : '';
   var nameLine = fld('FILENAME \\* MERGEFORMAT',docName(),C,S,true) +
                  txt(' • '+ftrDatum()+ver+kzl, C, S, false);
   var addrRun = '<w:r>'+rp+'<w:t>'+esc(addrParts.join(' • '))+'</w:t></w:r>';
