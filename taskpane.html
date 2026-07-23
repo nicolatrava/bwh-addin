@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 45</div>
+  <div class="build">Build 46</div>
 </div>
 
 <script>
@@ -1179,6 +1179,10 @@ function apply(){
           return ctx.sync();
         });
       }).then(function(){
+        /* CI-fremde Stile aus der Galerie nehmen – bei jedem Anwenden,
+           auch auf gewöhnlichen leeren Word-Dokumenten. */
+        return cleanupGallery(ctx);
+      }).then(function(){
         /* NOTE: We intentionally do NOT call ctx.document.save() here.
            Auto-saving created unwanted files in the user's Ablage. The user
            saves manually when they want to keep the document. */
@@ -1233,6 +1237,28 @@ function clearBriefProfile(){
   if(badge) badge.classList.add('hidden');
   if(reset) reset.classList.add('hidden');
   if(hint)  hint.classList.remove('hidden');
+}
+
+/* Galerie aufräumen über die offizielle Style-API: CI-fremde Stile aus der
+   Formatvorlagen-Galerie nehmen (quickFormat aus). Kein OOXML-Eingriff,
+   kein Beschädigungsrisiko. WH-Stile und «Standard» bleiben sichtbar. */
+function cleanupGallery(ctx){
+  var ok = false;
+  try{ ok = Office.context.requirements.isSetSupported('WordApi','1.5'); }catch(e){}
+  if(!ok) return ctx.sync();
+  var styles = ctx.document.getStyles();
+  styles.load('items/nameLocal,items/quickFormat');
+  return ctx.sync().then(function(){
+    styles.items.forEach(function(st){
+      try{
+        var n = st.nameLocal || '';
+        if(n.indexOf('WH') === 0) return;
+        if(n === 'Standard' || n === 'Normal') return;
+        if(st.quickFormat) st.quickFormat = false;
+      }catch(e){}
+    });
+    return ctx.sync();
+  }).catch(function(){ return ctx.sync(); });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
