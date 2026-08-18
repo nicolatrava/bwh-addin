@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 48</div>
+  <div class="build">Build 49</div>
 </div>
 
 <script>
@@ -1268,8 +1268,8 @@ function cleanupGallery(ctx){
 /* ═══════════════════════════════════════════════════════════════════════════
    Aktualisieren: Fusszeile (Name+Datum) und Felder/IVZ – ohne sonstige Änderung
    ═══════════════════════════════════════════════════════════════════════════ */
-function updateFooterMeta(){
-  if(!dept){ showStatus('Bitte zuerst Abteilung wählen', 'err'); return; }
+function updateFooterMeta(auto){
+  if(!dept){ if(!auto) showStatus('Bitte zuerst Abteilung wählen', 'err'); return; }
   var isQuer = (fmt==='quer'), isExtern = (typ==='extern'), isBrief = (typ==='brief');
   var kzUI = document.getElementById('kuerzel').value.trim();
   _applyN++;
@@ -1501,6 +1501,11 @@ Office.onReady(function(info){
         if(saved.briefFunktion) document.getElementById('brief-funktion').value = saved.briefFunktion;
         if(saved.briefTelefon)  document.getElementById('brief-telefon').value  = saved.briefTelefon;
         if(saved.briefEmail)    document.getElementById('brief-email').value    = saved.briefEmail;
+        /* Fusszeile (Dateiname + Datum) automatisch auffrischen: Word
+           aktualisiert Felder beim Öffnen nicht zuverlässig. Läuft nur,
+           wenn das Add-in offen ist und das Dokument schon einmal
+           angewendet wurde. Version und Kürzel bleiben stehen. */
+        if(dept){ setTimeout(function(){ try{ updateFooterMeta(true); }catch(e){} }, 800); }
       }
     });
   } catch(e){}
