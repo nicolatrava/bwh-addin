@@ -212,7 +212,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
         <input type="checkbox" id="neue-version"/>
         Neue Version (Versionsdatum auf heute setzen)
       </label>
-      <div class="profile-hint">Nur anklicken, wenn die Mustervorlage &auml;ndert. Beim reinen Ausf&uuml;llen leer lassen (Standard f&uuml;r Intranet-Dokumente).</div>
+      <div class="profile-hint">Im Normalfall leer lassen. Nur anklicken, wenn die Version der Vorlage &auml;ndert.</div>
     </div>
 
     <!-- Brief-specific fields (only for Brief) -->
@@ -272,7 +272,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 49</div>
+  <div class="build">Build 50</div>
 </div>
 
 <script>
@@ -900,7 +900,7 @@ function ftrLines(dept, verDatum, kuerzel, extraRun){
   addrParts.push(dept.street); addrParts.push(dept.plz+' Basel'); addrParts.push('www.waisehuus.ch');
   var pages = fld('PAGE \\* Arabic \\* MERGEFORMAT','1',C,S) + txt(' • ',C,S,false) +
               fld('NUMPAGES \\* Arabic \\* MERGEFORMAT','1',C,S);
-  var ver = ' • Version: '+(verDatum||'');
+  var ver = verDatum ? ' • Version: '+verDatum : '';
   var kzl = kuerzel ? ' • '+kuerzel : '';
   var nameLine = fld('FILENAME \\* MERGEFORMAT',docName(),C,S,true) +
                  txt(' • '+ftrDatum()+ver+kzl, C, S, false);
