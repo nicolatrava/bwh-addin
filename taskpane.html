@@ -15,7 +15,7 @@
 body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px;color:#2d2d2d}
 
 /* ── header bar ── */
-.top{background:var(--red);padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.top{background:var(--red);padding:12px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;row-gap:6px;column-gap:10px}
 .top h1{color:white;font-size:13px;font-weight:600;letter-spacing:.2px}
 .top-help{color:rgba(255,255,255,.85);font-size:11px;font-weight:500;text-decoration:none;
   border:1px solid rgba(255,255,255,.45);border-radius:4px;padding:3px 8px;white-space:nowrap}
@@ -91,7 +91,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 
 <div class="top">
   <h1>BWH Dokumentenvorlagen</h1>
-  <div style="display:flex;gap:6px">
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
     <a class="top-help" href="https://bwhb.sharepoint.com/:v:/r/sites/QMS/Management/B08/Dokumente%20Vorlagenset/BWH%20Anleitung%20Add%20in.mp4?d=w5e0b4e85c1a447e29967c3180e57726a&csf=1&web=1&e=8SJIrC" target="_blank">Anleitung</a>
     <a class="top-help" href="https://bwhb.sharepoint.com/:w:/r/sites/QMS/Management/B08/Konzepte%20und%20Leitf%C3%A4den/LF%20Dateitypen.docx?d=w8a17d7404f48421283a8405ffc8254b6&csf=1&web=1&e=Rl9pa0" target="_blank">Dateitypen</a>
     <a class="top-help" href="https://bwhb.sharepoint.com/:w:/r/sites/QMS/Management/B08/Konzepte%20und%20Leitf%C3%A4den/LF%20Dokulayout%20BWH.docx?d=w8901160c17814753b822489552675236&csf=1&web=1&e=fjvg5O" target="_blank">Dokulayout</a>
@@ -273,7 +273,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 51</div>
+  <div class="build">Build 52</div>
 </div>
 
 <script>
