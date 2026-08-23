@@ -273,7 +273,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:white;font-size:13px
 <div class="sticky">
   <button class="btn" id="applyBtn" onclick="apply()">Auf Dokument anwenden</button>
   <div class="status" id="status"></div>
-  <div class="build">Build 52</div>
+  <div class="build">Build 53</div>
 </div>
 
 <script>
@@ -1191,6 +1191,10 @@ function apply(){
         try {
           var state = JSON.stringify({typ:typ, fmt:fmt, dept:dept.name, pname:pname, aort:aort, kuerzel:kuerzel, briefName:briefName, briefFunktion:briefFunktion, briefTelefon:briefTelefon, briefEmail:briefEmail});
           Office.context.document.settings.set('bwhAddinState', state);
+          /* Add-in in diesem Dokument beim Öffnen automatisch mitstarten:
+             nur so kann die Fusszeile (Dateiname/Datum) ohne Zutun
+             aktualisiert werden, wenn das Dokument später geöffnet wird. */
+          Office.context.document.settings.set('Office.AutoShowTaskpaneWithDocument', true);
           Office.context.document.settings.saveAsync(function(){});
         } catch(e){}
         /* Remember personal data for this user across documents (macro replacement) */
